@@ -45,7 +45,7 @@ public class Utility {
         return  secretKey;
     }
 
-    public static String keyToBase64(Key key, String algorithm) throws NoSuchAlgorithmException {
+    public static String keyToBase64(Key key)  {
         String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
         return encodedKey;
     }
