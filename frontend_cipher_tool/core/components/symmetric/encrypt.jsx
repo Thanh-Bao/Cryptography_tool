@@ -12,6 +12,12 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import ChooseKeySize from "@/components/symmetric/chooseKeySize";
+import Tooltip from '@mui/material/Tooltip';
 
 const MyDropzone = () => {
     const onDrop = useCallback(acceptedFiles => {
@@ -52,17 +58,52 @@ const ZoneDownload = () => {
     )
 }
 
+
 const Encrypt = () => {
     const [showInputText, setShowInputText] = React.useState(true);
+    const [algorithm, setAlgorithm] = useState("AES");
+    const [showVerified, setShowVerified] = useState(true);
+    const [keySize, setKeySize] = useState(null);
+
+    const [listItems, setListItems] = useState([128, 192, 256]);
+
+    const handleAlgorithmChange = (event) => {
+        const value = event.target.value;
+        setAlgorithm(value);
+        if (value == "AES" || value == "DES" || value == "Blowfish") {
+            setShowVerified(true);
+        } else {
+            setShowVerified(false);
+        }
+        switch (value) {
+            case "DES":
+                setListItems([56]);
+                break;
+            case "Serpent":
+                setListItems([128, 192, 256]);
+                break;
+            case "AES":
+                setListItems([128, 192, 256]);
+                break;
+            case "Twofish":
+                setListItems([128, 192, 256]);
+                break;
+        }
+    };
 
     const handleSwitch = () => {
         setShowInputText(!showInputText);
     };
+
+    const handleCallBack = (keySize) => {
+        setKeySize(keySize);
+    }
+
     return (
         <Grid sx={{ justifyContent: 'center', textAlign: "center", mx: 'auto' }}
             container spacing={2}>
             <Grid item xs={12}>
-                <h2>Nhập dữ liệu cần mã hóa:</h2>
+                <div style={{ fontSize: '20px' }}>{showInputText ? "Nhập dữ liệu cần mã hóa:" : "Tải lên file cần mã hóa:"}</div>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <FormControl  >
@@ -84,19 +125,56 @@ const Encrypt = () => {
                 }
             </Grid>
 
+            <Grid item xs={12}>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Chọn thuật toán mã hóa:</div></Divider>
+            </Grid>
+            <Grid item xs={12}>
+                <FormControl sx={{ width: "30%" }}>
+                    <InputLabel>thuật toán*</InputLabel>
+                    <Select
+                        value={algorithm}
+                        label="click để chọn"
+                        onChange={handleAlgorithmChange}
+                    >
+                        <MenuItem value={"AES"}>
+                            <span style={{ fontWeight: "bolder" }}>AES-</span> Advanced Encryption Standard
+                        </MenuItem>
+                        <MenuItem value={"DES"}>
+                            <span style={{ fontWeight: "bolder" }}>DES-</span> Data Encryption Standard
+                        </MenuItem>
+                        <MenuItem value={"Blowfish"}>
+                            <span style={{ fontWeight: "bolder" }}>Blowfish</span>
+                        </MenuItem>
+                        <MenuItem value={"Twofish"}>
+                            <span style={{ fontWeight: "bolder" }}>Twofish</span>
+                        </MenuItem>
+                        <MenuItem value={"Serpent"}>
+                            <span style={{ fontWeight: "bolder" }}>Serpent</span>
+                        </MenuItem>
+                    </Select>
+                    {showVerified ?
+                        <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
+                            <VerifiedUserIcon style={{ color: "green", verticalAlign: 'middle' }} />
+                            <span style={{ color: "#575859" }}>Thuật toán này được java hỗ trợ</span>
+                        </div> : null
+                    }
+                </FormControl>
+            </Grid>
 
             <Grid item xs={12}>
-                <Divider> <h2>Nhập key:</h2></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập key (định dạng base64):</div></Divider>
             </Grid>
             <Grid item lg={3} xs={12}>
-                <h1>xs=6 md=8</h1>
+                <div>Chọn kích thước key</div>
+                <ChooseKeySize algorithm={algorithm} listItems={listItems} parentCallback={handleCallBack} />
             </Grid>
             <Grid item lg={9} xs={12}>
-                <h1>xs=6 md=8</h1>
+                <Form.Control as="textarea" onChange={(e) => console.log(e.target.value)}
+                    rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
             </Grid>
 
             <Grid item xs={12}>
-                <Divider> <h2>Kết quả:</h2></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Kết quả (định dạng base64):</div></Divider>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <h1>xs=6 md=8</h1>
@@ -110,7 +188,7 @@ const Encrypt = () => {
                     : <ZoneDownload />
                 }
             </Grid>
-        </Grid>
+        </Grid >
     )
 }
 
