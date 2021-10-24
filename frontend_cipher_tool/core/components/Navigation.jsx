@@ -14,6 +14,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { useRouter } from 'next/router'
 
 const useStyles = makeStyles({
     menuItem: {
@@ -26,27 +27,29 @@ const useStyles = makeStyles({
 const menuItems = [
     {
         label: "Mã hóa đối xứng",
-        link: ""
+        link: "/"
     },
     {
         label: "Mã hóa bất đối xứng",
-        link: ""
+        link: "/asymmetric"
     },
     {
-        label: "Mã hóa hỗn hợp",
-        link: ""
+        label: "Mã hóa kết hợp",
+        link: "/mix"
     },
     {
         label: "Hash - băm",
-        link: ""
+        link: "/hash"
     },
 ]
 
 const MenuItem = (props) => {
+    const router = useRouter();
     const classes = useStyles();
     return (
         <Button variant="text"
             className={classes.menuItem}
+            onClick={() => router.push(props.link)}
         >
             <span style={{ color: "white", fontWeight: 900, fontSize: "17px" }}>{props.label}</span>
         </Button>
@@ -90,8 +93,8 @@ const TemporaryDrawer = props => {
 
 const NavigationBar = (props) => {
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="fixed" >
+        <Box sx={{ marginBottom: "1%" }}>
+            <AppBar position="static" >
                 <BrowserView>
                     <Toolbar sx={{ justifyContent: "center" }}>
                         <Stack
@@ -101,7 +104,7 @@ const NavigationBar = (props) => {
                             sx={{ fontWeight: '900' }}
                         >
                             {menuItems.map((item) => {
-                                return <MenuItem key={item.link} label={item.label} />
+                                return <MenuItem key={item.link} link={item.link} label={item.label} />
                             })}
                         </Stack>
                     </Toolbar>

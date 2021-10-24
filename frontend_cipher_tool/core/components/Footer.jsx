@@ -8,7 +8,7 @@ import { Box } from '@mui/material';
 
 const Footer = () => {
     return (
-        <Box sx={{ backgroundColor: 'black', paddingTop: "20px", paddingBottom: "20px" }}>
+        <Box sx={{ backgroundColor: 'black', paddingTop: "20px", paddingBottom: "20px", marginTop: "60px" }}>
             <Stack
                 direction="row"
                 spacing={2}
