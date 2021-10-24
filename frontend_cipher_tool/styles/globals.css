@@ -1,9 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
 a {
@@ -14,3 +14,25 @@ a {
 * {
   box-sizing: border-box;
 }
+
+#fileUploader {
+  display: block;
+  clear: both;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 600px;
+}
+#labelUploader {
+    float: left;
+    clear: both;
+    width: 100%;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-radius: 7px;
+    border: 3px dashed rgb(124, 122, 122);
+    transition: all .2s ease;
+    user-select: none;  
+    }
+#labelUploader:hover{
+      border: 3px dashed rgb(17, 17, 161);
+    }
