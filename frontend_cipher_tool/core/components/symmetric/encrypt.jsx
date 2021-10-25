@@ -23,6 +23,7 @@ import { useSnackbar } from 'notistack';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import IconButton from '@mui/material/IconButton';
 import LockIcon from '@mui/icons-material/Lock';
+import { SITE_URL } from '../../config';
 
 const MyDropzone = () => {
     const onDrop = useCallback(acceptedFiles => {
@@ -112,7 +113,7 @@ const Encrypt = () => {
         setShowCopyKey(true);
         axios({
             method: 'post',
-            url: 'http://localhost:8080/symmetric/generateKey',
+            url: `${SITE_URL}/symmetric/generateKey`,
             data: {
                 "keySize": keySize,
                 "algorithm": algorithm
@@ -129,7 +130,7 @@ const Encrypt = () => {
     const handleSubmit = () => {
         axios({
             method: 'post',
-            url: 'http://localhost:8080/symmetric/crypto-text',
+            url: `${SITE_URL}/symmetric/crypto-text`,
             data: {
                 "key": "vKBkjg3eqxkfb9xnnb072A==",
                 "data": "Xin chào các bạn",

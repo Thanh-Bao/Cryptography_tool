@@ -21,7 +21,6 @@
             "@api/*": ["core/api/*"],
             "@/pages/*": ["pages/*"], 
             "@/*": ["core/*"],
-            "@/config": ["core/"]
         },
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "core/components/Navigation.jsx"],
