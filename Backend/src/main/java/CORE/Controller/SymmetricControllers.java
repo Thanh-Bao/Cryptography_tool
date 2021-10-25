@@ -8,10 +8,7 @@ import CORE.cipher.Symmetric;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -20,6 +17,7 @@ import java.util.Map;
 @RestController
 public class SymmetricControllers {
 
+    //@CrossOrigin(origins = "http://localhost:3000")
     @PostMapping(value = "/symmetric/generateKey",produces= MediaType.APPLICATION_JSON_VALUE)
     public Object generateKey(@RequestBody GetKeyDTO payload) throws NoSuchAlgorithmException {
         int keySize =  payload.getKeySize();

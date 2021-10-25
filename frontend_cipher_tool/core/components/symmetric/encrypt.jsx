@@ -18,6 +18,8 @@ import Select from '@mui/material/Select';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ChooseKeySize from "@/components/symmetric/chooseKeySize";
 import Tooltip from '@mui/material/Tooltip';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
 
 const MyDropzone = () => {
     const onDrop = useCallback(acceptedFiles => {
@@ -60,6 +62,8 @@ const ZoneDownload = () => {
 
 
 const Encrypt = () => {
+    const { enqueueSnackbar } = useSnackbar();
+
     const [showInputText, setShowInputText] = React.useState(true);
     const [algorithm, setAlgorithm] = useState("AES");
     const [showVerified, setShowVerified] = useState(true);
@@ -97,6 +101,23 @@ const Encrypt = () => {
 
     const handleCallBack = (keySize) => {
         setKeySize(keySize);
+    }
+
+    const getKeyAPI = () => {
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/symmetric/generateKey',
+            data: {
+                "keySize": 128,
+                "algorithm": "AES"
+            }
+        }).then((res) => {
+            console.log(res)
+            enqueueSnackbar("HIIHIH");
+        }).catch(err => {
+            console.log(err)
+            enqueueSnackbar("Lỗi tạo key, vui lòng thử lại");
+        });
     }
 
     return (
@@ -167,9 +188,14 @@ const Encrypt = () => {
             <Grid item lg={3} xs={12}>
                 <div>Chọn kích thước key</div>
                 <ChooseKeySize algorithm={algorithm} listItems={listItems} parentCallback={handleCallBack} />
+                <div style={{ marginTop: "20px" }}>
+                    <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
+                        <Button onClick={getKeyAPI} variant="contained">Tạo key ngẫu nhiên</Button>
+                    </Tooltip>
+                </div>
             </Grid>
             <Grid item lg={9} xs={12}>
-                <Form.Control as="textarea" onChange={(e) => console.log(e.target.value)}
+                <Form.Control as="textarea"
                     rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
             </Grid>
 

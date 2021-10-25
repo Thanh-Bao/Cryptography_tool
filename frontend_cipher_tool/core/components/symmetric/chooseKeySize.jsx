@@ -51,11 +51,6 @@ const ChooseKeySize = props => {
                     </Stack>
                 </>
             }
-            <div style={{ marginTop: "20px" }}>
-                <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
-                    <Button variant="contained">Tạo key ngẫu nhiên</Button>
-                </Tooltip>
-            </div>
         </>
     )
 }
