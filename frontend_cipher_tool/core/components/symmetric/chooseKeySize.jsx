@@ -13,7 +13,7 @@ const ChooseKeySize = props => {
 
     const handleChange = (event) => {
         const value = parseInt(event.target.value);
-        if (value >= 32 && value <= 448) {
+        if (value >= 32 && value <= 448 && value % 8 == 0) {
             props.parentCallback(value);
             setShowError(false);
         } else {
@@ -44,10 +44,9 @@ const ChooseKeySize = props => {
                             <TextField error={showError}
                                 onChange={handleChange}
                                 defaultValue={32}
-                                helperText="key size từ 32->448 bit"
+                                helperText="key size từ 32->448 bit là bội của 8"
                                 variant="outlined" />
                         </div>
-
                     </Stack>
                 </>
             }

@@ -20,6 +20,9 @@ import ChooseKeySize from "@/components/symmetric/chooseKeySize";
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import IconButton from '@mui/material/IconButton';
+import LockIcon from '@mui/icons-material/Lock';
 
 const MyDropzone = () => {
     const onDrop = useCallback(acceptedFiles => {
@@ -64,12 +67,14 @@ const ZoneDownload = () => {
 const Encrypt = () => {
     const { enqueueSnackbar } = useSnackbar();
 
-    const [showInputText, setShowInputText] = React.useState(true);
     const [algorithm, setAlgorithm] = useState("AES");
+    const [keySize, setKeySize] = useState(128);
+    const [keyValue, setKeyValue] = useState(null)
+    // UI
+    const [showInputText, setShowInputText] = React.useState(true);
     const [showVerified, setShowVerified] = useState(true);
-    const [keySize, setKeySize] = useState(null);
-
     const [listItems, setListItems] = useState([128, 192, 256]);
+    const [showCopyKey, setShowCopyKey] = useState(false);
 
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
@@ -104,19 +109,38 @@ const Encrypt = () => {
     }
 
     const getKeyAPI = () => {
+        setShowCopyKey(true);
         axios({
             method: 'post',
             url: 'http://localhost:8080/symmetric/generateKey',
             data: {
-                "keySize": 128,
+                "keySize": keySize,
+                "algorithm": algorithm
+            }
+        }).then((res) => {
+            console.log(res)
+            setKeyValue(res.data.content);
+        }).catch(err => {
+            console.log(err)
+            enqueueSnackbar("Lỗi tạo key, vui lòng kiểm tra lại");
+        });
+    }
+
+    const handleSubmit = () => {
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/symmetric/crypto-text',
+            data: {
+                "key": "vKBkjg3eqxkfb9xnnb072A==",
+                "data": "Xin chào các bạn",
+                "mode": 1,
                 "algorithm": "AES"
             }
         }).then((res) => {
             console.log(res)
-            enqueueSnackbar("HIIHIH");
         }).catch(err => {
             console.log(err)
-            enqueueSnackbar("Lỗi tạo key, vui lòng thử lại");
+            enqueueSnackbar("Lỗi tạo key, vui lòng kiểm tra lại");
         });
     }
 
@@ -188,17 +212,36 @@ const Encrypt = () => {
             <Grid item lg={3} xs={12}>
                 <div>Chọn kích thước key</div>
                 <ChooseKeySize algorithm={algorithm} listItems={listItems} parentCallback={handleCallBack} />
-                <div style={{ marginTop: "20px" }}>
-                    <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
-                        <Button onClick={getKeyAPI} variant="contained">Tạo key ngẫu nhiên</Button>
-                    </Tooltip>
+                <div>
+                    <Stack direction="row"
+                        sx={{ mx: "auto", justifyContent: "center", textAlign: "center", marginTop: "10px", marginLeft: "49px" }}
+                        spacing={1}>
+                        <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
+                            <Button onClick={getKeyAPI} variant="contained">Tạo key ngẫu nhiên</Button>
+                        </Tooltip>
+                        <Tooltip style={{ visibility: showCopyKey ? "visible" : "hidden" }}
+                            title="Copy key">
+                            <IconButton onClick={() => { navigator.clipboard.writeText(keyValue) }} >
+                                <ContentCopyOutlinedIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
                 </div>
+
+
             </Grid>
             <Grid item lg={9} xs={12}>
                 <Form.Control as="textarea"
+                    value={keyValue}
+                    onChange={e => { setKeyValue(e.target.value); if (keyValue.length <= 1) { setShowCopyKey(false) } }}
                     rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
             </Grid>
 
+            <Grid item xs={12}>
+                <Button onClick={handleSubmit} size="large" sx={{ fontSize: "18px" }} variant="contained" startIcon={<LockIcon />}>
+                    Mã hóa
+                </Button>
+            </Grid>
             <Grid item xs={12}>
                 <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Kết quả (định dạng base64):</div></Divider>
             </Grid>

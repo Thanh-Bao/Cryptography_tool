@@ -29,7 +29,7 @@ public class SymmetricControllers {
         return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/symmetric/crypto-text")
+    @PostMapping(value = "/symmetric/crypto-text")
     public Object cryptoText(@RequestBody CryptoDTO payload) throws Exception {
         String encrypted = Symmetric.doCryptoText(payload.getMode(),payload.getKey(),payload.getData(),payload.getAlgorithm()) ;
         return new ResponseEntity<String>(encrypted, HttpStatus.OK) ;
