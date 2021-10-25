@@ -10,8 +10,6 @@ import { Form } from 'react-bootstrap';
 import { useDropzone } from 'react-dropzone';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -22,8 +20,12 @@ import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import IconButton from '@mui/material/IconButton';
-import LockIcon from '@mui/icons-material/Lock';
 import { SITE_URL } from '../../config';
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import LockIcon from '@mui/icons-material/Lock';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { useRouter } from 'next/router'
 
 const MyDropzone = () => {
     const onDrop = useCallback(acceptedFiles => {
@@ -67,36 +69,44 @@ const ZoneDownload = () => {
 
 const Encrypt = () => {
     const { enqueueSnackbar } = useSnackbar();
+    const router = useRouter();
 
     const [algorithm, setAlgorithm] = useState("AES");
     const [keySize, setKeySize] = useState(128);
-    const [keyValue, setKeyValue] = useState(null)
+    const [keyValue, setKeyValue] = useState("");
+    const [dataInput, setDataInput] = useState("");
     // UI
+    const [dataOutput, setDataOutput] = useState("");
     const [showInputText, setShowInputText] = React.useState(true);
     const [showVerified, setShowVerified] = useState(true);
     const [listItems, setListItems] = useState([128, 192, 256]);
     const [showCopyKey, setShowCopyKey] = useState(false);
+    const [show3rd, setShow3rd] = useState(false);
 
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
         setAlgorithm(value);
         if (value == "AES" || value == "DES" || value == "Blowfish") {
             setShowVerified(true);
+            setShow3rd(false);
         } else {
+            setShow3rd(true);
             setShowVerified(false);
         }
         switch (value) {
             case "DES":
                 setListItems([56]);
+                setKeySize(56);
                 break;
             case "Serpent":
-                setListItems([128, 192, 256]);
-                break;
             case "AES":
-                setListItems([128, 192, 256]);
-                break;
             case "Twofish":
+            case "Serpent":
                 setListItems([128, 192, 256]);
+                setKeySize(128);
+                break;
+            case "Blowfish":
+                setKeySize(32);
                 break;
         }
     };
@@ -119,11 +129,9 @@ const Encrypt = () => {
                 "algorithm": algorithm
             }
         }).then((res) => {
-            console.log(res)
             setKeyValue(res.data.content);
         }).catch(err => {
-            console.log(err)
-            enqueueSnackbar("Lỗi tạo key, vui lòng kiểm tra lại");
+            enqueueSnackbar("Lỗi tạo key, vui lòng chọn đúng");
         });
     }
 
@@ -132,16 +140,16 @@ const Encrypt = () => {
             method: 'post',
             url: `${SITE_URL}/symmetric/crypto-text`,
             data: {
-                "key": "vKBkjg3eqxkfb9xnnb072A==",
-                "data": "Xin chào các bạn",
-                "mode": 1,
-                "algorithm": "AES"
+                "key": keyValue,
+                "data": dataInput,
+                "mode": 1, // trong Cipher mode java 1 là mã hóa
+                "algorithm": algorithm
             }
         }).then((res) => {
-            console.log(res)
+            setDataOutput(res.data.content);
+            router.push(`${window.location.href}#result-output`)
         }).catch(err => {
-            console.log(err)
-            enqueueSnackbar("Lỗi tạo key, vui lòng kiểm tra lại");
+            enqueueSnackbar("Lỗi mã hóa, vui lòng nhập đúng");
         });
     }
 
@@ -152,7 +160,7 @@ const Encrypt = () => {
                 <div style={{ fontSize: '20px' }}>{showInputText ? "Nhập dữ liệu cần mã hóa:" : "Tải lên file cần mã hóa:"}</div>
             </Grid>
             <Grid item lg={3} xs={12}>
-                <FormControl  >
+                <FormControl >
                     <FormLabel >Bạn cần mã hóa gì?</FormLabel>
                     <RadioGroup
                         value={showInputText}
@@ -166,6 +174,8 @@ const Encrypt = () => {
             <Grid item lg={9} xs={12}>
                 {showInputText ?
                     <Form.Control as="textarea"
+                        value={dataInput}
+                        onChange={event => setDataInput(event.target.value)}
                         rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
                     : <MyDropzone />
                 }
@@ -204,6 +214,12 @@ const Encrypt = () => {
                             <span style={{ color: "#575859" }}>Thuật toán này được java hỗ trợ</span>
                         </div> : null
                     }
+                    {show3rd ?
+                        <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
+                            <InfoOutlinedIcon style={{ color: "blue", verticalAlign: 'middle' }} />
+                            <span style={{ color: "#575859" }}> Thuật toán này dùng thư viện ngoài JDK</span>
+                        </div> : null
+                    }
                 </FormControl>
             </Grid>
 
@@ -234,25 +250,43 @@ const Encrypt = () => {
             <Grid item lg={9} xs={12}>
                 <Form.Control as="textarea"
                     value={keyValue}
-                    onChange={e => { setKeyValue(e.target.value); if (keyValue.length <= 1) { setShowCopyKey(false) } }}
+                    onChange={e => { setKeyValue(e.target.value); if (keyValue == "") { setShowCopyKey(false) } }}
                     rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
             </Grid>
 
             <Grid item xs={12}>
-                <Button onClick={handleSubmit} size="large" sx={{ fontSize: "18px" }} variant="contained" startIcon={<LockIcon />}>
-                    Mã hóa
-                </Button>
+                <Stack spacing={1}>
+                    {(dataInput == "" || keyValue == "") ?
+                        <span>hãy nhập đủ thông tin để mã hóa</span> : null
+                    }
+                    <div>
+                        <Button
+                            disabled={(dataInput == "" || keyValue == "") ? true : false}
+                            onClick={handleSubmit}
+                            size="large" sx={{ fontSize: "18px" }}
+                            variant="contained" startIcon={<LockIcon />}>
+                            Mã hóa
+                        </Button>
+                    </div>
+                </Stack>
             </Grid>
             <Grid item xs={12}>
                 <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Kết quả (định dạng base64):</div></Divider>
             </Grid>
             <Grid item lg={3} xs={12}>
-                <h1>xs=6 md=8</h1>
+                <Tooltip style={{ visibility: dataOutput != "" ? "visible" : "hidden" }}
+                    title="Copy key">
+                    <IconButton onClick={() => { navigator.clipboard.writeText(dataOutput) }} >
+                        <ContentCopyOutlinedIcon />
+                    </IconButton>
+                </Tooltip>
             </Grid>
             <Grid item lg={9} xs={12}>
                 {showInputText ?
                     <div>
                         <Form.Control as="textarea"
+                            id="result-output"
+                            value={dataOutput}
                             rows={3} style={{ width: "80%", height: "120px", fontSize: "15px" }} />
                     </div>
                     : <ZoneDownload />

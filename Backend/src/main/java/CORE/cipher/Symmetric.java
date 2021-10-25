@@ -23,7 +23,7 @@ public class Symmetric {
 
         byte[] encVal = null;
         String result = null;
-        if(cipherMode==1){
+        if (cipherMode == 1) {
             encVal = c.doFinal(data.getBytes());
             result = Utility.byteArrToBASE64(encVal);
         } else {
@@ -37,22 +37,31 @@ public class Symmetric {
     public static void doCryptoFile(int cipherMode, String keyBase64, String algorithm, File inputFile, File outputFile)
             throws NoSuchPaddingException, NoSuchAlgorithmException, IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 
-            Key key = Utility.Base64ToKey(keyBase64, algorithm);
-            Cipher cipher = Cipher.getInstance(algorithm);
-            cipher.init(cipherMode, key);
+        Key key = Utility.Base64ToKey(keyBase64, algorithm);
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(cipherMode, key);
 
-            FileInputStream inputStream = new FileInputStream(inputFile);
-            byte[] inputBytes = new byte[(int) inputFile.length()];
-            inputStream.read(inputBytes);
+        FileInputStream fileInputStream = new FileInputStream(inputFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+        byte[] inputBytes = new byte[(int) inputFile.length()];
+        fileInputStream.read(inputBytes);
+        int bytesRead;
 
-            byte[] outputBytes = cipher.doFinal(inputBytes);
-
-            FileOutputStream outputStream = new FileOutputStream(outputFile);
-            outputStream.write(outputBytes);
-
-            inputStream.close();
-            outputStream.close();
-
+        while ((bytesRead = fileInputStream.read(inputBytes)) != -1) {
+            byte[] output = cipher.update(inputBytes, 0, bytesRead);
+            if (output != null) {
+                fileOutputStream.write(output);
+            }
         }
+        byte[] outputBytes = cipher.doFinal(inputBytes);
+        if (outputBytes != null) {
+            fileOutputStream.write(outputBytes);
+        }
+
+        fileInputStream.close();
+        fileOutputStream.flush();
+        fileOutputStream.close();
+
     }
+}
 

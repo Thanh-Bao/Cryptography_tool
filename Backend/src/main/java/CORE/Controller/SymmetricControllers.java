@@ -18,21 +18,22 @@ import java.util.Map;
 public class SymmetricControllers {
 
     //@CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping(value = "/symmetric/generateKey",produces= MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/symmetric/generateKey", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object generateKey(@RequestBody GetKeyDTO payload) throws NoSuchAlgorithmException {
-        int keySize =  payload.getKeySize();
+        int keySize = payload.getKeySize();
         String algorithm = payload.getAlgorithm();
 
-        Key key = Utility.generateKey(keySize,algorithm);
+        Key key = Utility.generateKey(keySize, algorithm);
         String keyBa64 = Utility.keyToBase64(key);
-        ResponseDTO res = new ResponseDTO("base64", keyBa64 );
+        ResponseDTO res = new ResponseDTO("base64", keyBa64);
         return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
     }
 
     @PostMapping(value = "/symmetric/crypto-text")
     public Object cryptoText(@RequestBody CryptoDTO payload) throws Exception {
-        String encrypted = Symmetric.doCryptoText(payload.getMode(),payload.getKey(),payload.getData(),payload.getAlgorithm()) ;
-        return new ResponseEntity<String>(encrypted, HttpStatus.OK) ;
+        String encrypted = Symmetric.doCryptoText(payload.getMode(), payload.getKey(), payload.getData(), payload.getAlgorithm());
+        ResponseDTO res = new ResponseDTO("base64", encrypted);
+        return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
     }
 }
 
