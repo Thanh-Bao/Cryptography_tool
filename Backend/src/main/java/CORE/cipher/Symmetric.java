@@ -3,15 +3,8 @@ package CORE.cipher;
 import CORE.Utility;
 
 import java.io.*;
-import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
 
 public class Symmetric {
 
@@ -34,34 +27,37 @@ public class Symmetric {
     }
 
     // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
-    public static void doCryptoFile(int cipherMode, String keyBase64, String algorithm, File inputFile, File outputFile)
-            throws NoSuchPaddingException, NoSuchAlgorithmException, IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static boolean doCryptoFile(int cipherMode, String keyBase64, String algorithm, File inputFile, File outputFile){
+        try {
+            Key key = Utility.Base64ToKey(keyBase64, algorithm);
+            Cipher cipher = Cipher.getInstance(algorithm);
+            cipher.init(cipherMode, key);
 
-        Key key = Utility.Base64ToKey(keyBase64, algorithm);
-        Cipher cipher = Cipher.getInstance(algorithm);
-        cipher.init(cipherMode, key);
+            FileInputStream fileInputStream = new FileInputStream(inputFile);
+            FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+            byte[] inputBytes = new byte[(int) inputFile.length()];
+            fileInputStream.read(inputBytes);
+            int bytesRead;
 
-        FileInputStream fileInputStream = new FileInputStream(inputFile);
-        FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-        byte[] inputBytes = new byte[(int) inputFile.length()];
-        fileInputStream.read(inputBytes);
-        int bytesRead;
-
-        while ((bytesRead = fileInputStream.read(inputBytes)) != -1) {
-            byte[] output = cipher.update(inputBytes, 0, bytesRead);
-            if (output != null) {
-                fileOutputStream.write(output);
+            while ((bytesRead = fileInputStream.read(inputBytes)) != -1) {
+                byte[] output = cipher.update(inputBytes, 0, bytesRead);
+                if (output != null) {
+                    fileOutputStream.write(output);
+                }
             }
-        }
-        byte[] outputBytes = cipher.doFinal(inputBytes);
-        if (outputBytes != null) {
-            fileOutputStream.write(outputBytes);
-        }
+            byte[] outputBytes = cipher.doFinal(inputBytes);
+            if (outputBytes != null) {
+                fileOutputStream.write(outputBytes);
+            }
 
-        fileInputStream.close();
-        fileOutputStream.flush();
-        fileOutputStream.close();
+            fileInputStream.close();
+            fileOutputStream.flush();
+            fileOutputStream.close();
 
+            return true;
+        } catch (Exception e){
+            return false;
+        }
     }
 }
 

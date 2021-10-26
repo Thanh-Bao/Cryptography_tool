@@ -7,7 +7,6 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Divider from '@mui/material/Divider';
 import { Form } from 'react-bootstrap';
-import { useDropzone } from 'react-dropzone';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import InputLabel from '@mui/material/InputLabel';
@@ -26,40 +25,16 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useRouter } from 'next/router'
+import { styled } from '@mui/material/styles';
 
-const MyDropzone = () => {
-    const onDrop = useCallback(acceptedFiles => {
-        // Do something with the files
-        console.log(acceptedFiles);
-    }, [])
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
-    return (
-        <div {...getRootProps()}>
-            <input {...getInputProps()} />
-            {
-                <div id="fileUploader">
-                    <label id="labelUploader" >
-                        <Stack spacing={2}>
-                            <CloudUploadOutlinedIcon sx={{ mx: 'auto' }} style={{ fontSize: "4em", color: '#969592' }} />
-                            <div>
-                                <Button variant="contained">Tải file lên</Button>
-                            </div>
-                        </Stack>
-                    </label>
-                </div>
-            }
-        </div>
-    )
-}
-
-const ZoneDownload = () => {
+const ZoneDownload = (props) => {
     return (
         <>
             <Stack spacing={2}>
                 <FileDownloadOutlinedIcon sx={{ mx: 'auto' }} style={{ fontSize: "4em", color: '#969592' }} />
                 <div>
-                    <Button variant="contained">Tải file về máy</Button>
+                    <Button disabled={props.fileName ? false : true} variant="contained">Tải file về máy</Button>
                 </div>
             </Stack>
         </>
@@ -75,6 +50,8 @@ const Encrypt = () => {
     const [keySize, setKeySize] = useState(128);
     const [keyValue, setKeyValue] = useState("");
     const [dataInput, setDataInput] = useState("");
+    const [file, setFile] = useState(null);
+    const [fileName, setFileName] = useState(null);
     // UI
     const [dataOutput, setDataOutput] = useState("");
     const [showInputText, setShowInputText] = React.useState(true);
@@ -147,10 +124,26 @@ const Encrypt = () => {
             }
         }).then((res) => {
             setDataOutput(res.data.content);
-            router.push(`${window.location.href}#result-output`)
+            router.push(`${window.location.pathname}#result-output`)
         }).catch(err => {
             enqueueSnackbar("Lỗi mã hóa, vui lòng nhập đúng");
         });
+    }
+
+    const onFormSubmitFile = (e) => {
+        e.preventDefault() // Stop form submit
+
+        let formData = new FormData();
+        formData.append("file", file)
+
+        var config = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+        axios.post(`${SITE_URL}/uploadFile`, formData, config)
+            .then((res) => {
+                enqueueSnackbar("Tải ảnh thành công");
+                setFileName(res.data.content);
+            })
+            .catch(() => enqueueSnackbar("Lỗi tải file, vui lòng kiểm tra lại"));
     }
 
     return (
@@ -177,7 +170,22 @@ const Encrypt = () => {
                         value={dataInput}
                         onChange={event => setDataInput(event.target.value)}
                         rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
-                    : <MyDropzone />
+                    :
+                    <>
+                        <div id="fileUploader">
+                            <label id="labelUploader" >
+                                <Stack spacing={2}>
+                                    <CloudUploadOutlinedIcon sx={{ mx: 'auto' }} style={{ fontSize: "4em", color: '#969592' }} />
+                                    <div>
+                                        <form onSubmit={onFormSubmitFile}>
+                                            <input type="file" onChange={e => setFile(e.target.files[0])} />
+                                            <Button type="submit" variant="contained" >  Tải file lên</Button>
+                                        </form>
+                                    </div>
+                                </Stack>
+                            </label>
+                        </div>
+                    </>
                 }
             </Grid>
 
@@ -289,7 +297,7 @@ const Encrypt = () => {
                             value={dataOutput}
                             rows={3} style={{ width: "80%", height: "120px", fontSize: "15px" }} />
                     </div>
-                    : <ZoneDownload />
+                    : <ZoneDownload fileName={fileName} />
                 }
             </Grid>
         </Grid >

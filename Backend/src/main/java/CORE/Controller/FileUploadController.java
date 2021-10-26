@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import CORE.DTO.ResponseDTO;
 import CORE.Utility;
 import CORE.cipher.Symmetric;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.BadPaddingException;
@@ -22,13 +22,17 @@ import javax.crypto.NoSuchPaddingException;
 @RestController
 public class FileUploadController {
 
-    @PostMapping("/uploadFile")
-    public ResponseEntity<Object> fileUpload(@RequestParam("File") MultipartFile file) throws IOException {
+
+
+    @PostMapping(value="/uploadFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> fileUpload(@RequestParam("file") MultipartFile file) throws IOException {
         String messageValidateFile = Utility.storeFile(file);
         if (messageValidateFile != null) {
             return new ResponseEntity<Object>(messageValidateFile, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity("Upload thành công!", HttpStatus.OK);
+        System.out.println(file.getSize() + file.getOriginalFilename());
+        ResponseDTO res = new ResponseDTO("name", file.getOriginalFilename());
+        return new ResponseEntity(res, HttpStatus.OK);
     }
 
     @PostMapping("/test")
