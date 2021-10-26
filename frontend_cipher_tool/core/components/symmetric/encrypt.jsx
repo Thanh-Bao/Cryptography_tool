@@ -34,7 +34,7 @@ const ZoneDownload = (props) => {
             <Stack spacing={2}>
                 <FileDownloadOutlinedIcon sx={{ mx: 'auto' }} style={{ fontSize: "4em", color: '#969592' }} />
                 <div>
-                    <Button disabled={props.fileName ? false : true} variant="contained">Tải file về máy</Button>
+                    <Button disabled={props.pathFileDownload ? false : true} variant="contained">Tải file về máy</Button>
                 </div>
             </Stack>
         </>
@@ -52,6 +52,7 @@ const Encrypt = () => {
     const [dataInput, setDataInput] = useState("");
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState(null);
+    const [pathFileDownload, setPathFileDownload] = useState(null);
     // UI
     const [dataOutput, setDataOutput] = useState("");
     const [showInputText, setShowInputText] = React.useState(true);
@@ -289,17 +290,20 @@ const Encrypt = () => {
                     </IconButton>
                 </Tooltip>
             </Grid>
-            <Grid item lg={9} xs={12}>
-                {showInputText ?
+            {showInputText ?
+                <Grid item lg={9} xs={12}>
                     <div>
                         <Form.Control as="textarea"
                             id="result-output"
                             value={dataOutput}
                             rows={3} style={{ width: "80%", height: "120px", fontSize: "15px" }} />
                     </div>
-                    : <ZoneDownload fileName={fileName} />
-                }
-            </Grid>
+                </Grid>
+                :
+                <Grid item xs={12}>
+                    <ZoneDownload pathFileDownload={pathFileDownload} />
+                </Grid>
+            }
         </Grid >
     )
 }
