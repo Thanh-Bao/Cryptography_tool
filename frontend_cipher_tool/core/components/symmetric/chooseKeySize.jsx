@@ -26,7 +26,7 @@ const ChooseKeySize = props => {
             {props.algorithm != "Blowfish" ?
                 <FormControl sx={{ width: "50%", marginTop: "15px" }}>
                     <Select
-                        value={props.listItems[0]}
+                        value={props.keySize}
                         onChange={event => { props.parentCallback(event.target.value) }}
                     >
                         {props.listItems.map((item) => {
@@ -44,7 +44,7 @@ const ChooseKeySize = props => {
                             <TextField error={showError}
                                 onChange={handleChange}
                                 defaultValue={32}
-                                helperText="key size từ 32->448 bit là bội của 8"
+                                helperText="key size từ 32->448 bit & là bội của 8"
                                 variant="outlined" />
                         </div>
                     </Stack>

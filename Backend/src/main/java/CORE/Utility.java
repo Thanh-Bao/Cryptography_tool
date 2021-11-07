@@ -7,27 +7,31 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import org.apache.commons.io.FilenameUtils;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.UUID;
 
 
 public class Utility {
 
-    public static String storeFile(MultipartFile file) throws IOException {
+    public static String storeFile(MultipartFile file) throws Exception {
         if (file.getSize() > (10 * 1024 * 1024)) {
-            return "Vui lòng chọn file < 10MB";
+            throw  new Exception("Vui lòng chọn file < 10MB") ;
         }
         if (file.getSize() == 0 || file == null) {
-            return "Bạn chưa chọn file";
+            throw new Exception("Bạn chưa chọn file") ;
         }
-        File newFile = new File(ENV.pathMedia + file.getOriginalFilename());
+        UUID uuid = UUID.randomUUID();
+        String uuidAsString = uuid.toString();
+        String fileName =  uuidAsString+"."+FilenameUtils.getExtension(file.getOriginalFilename());
+        File newFile = new File(ENV.pathMedia +fileName);
         newFile.createNewFile();
         FileOutputStream fos = new FileOutputStream(newFile);
         fos.write(file.getBytes());
         fos.close();
-        return null;
+        return fileName;
     }
 
     public static String byteArrToBASE64(byte[] arr) {

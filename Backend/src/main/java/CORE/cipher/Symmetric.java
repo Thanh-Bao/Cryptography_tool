@@ -9,9 +9,9 @@ import javax.crypto.Cipher;
 public class Symmetric {
 
     // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
-    public static String doCryptoText(int cipherMode, String keyBase64, String data, String algorithm) throws Exception {
+    public static String doCryptoText(int cipherMode, String keyBase64, String modeOperation, String padding, String algorithm,String data) throws Exception {
         Key key = Utility.Base64ToKey(keyBase64, algorithm);
-        Cipher c = Cipher.getInstance(algorithm);
+        Cipher c = Cipher.getInstance(algorithm+"/"+modeOperation+"/"+padding);
         c.init(cipherMode, key);
 
         byte[] encVal = null;
@@ -27,7 +27,7 @@ public class Symmetric {
     }
 
     // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
-    public static boolean doCryptoFile(int cipherMode, String keyBase64, String algorithm, File inputFile, File outputFile){
+    public static boolean doCryptoFile(int cipherMode, String keyBase64,String modeOperation, String padding, String algorithm, File inputFile, File outputFile){
         try {
             Key key = Utility.Base64ToKey(keyBase64, algorithm);
             Cipher cipher = Cipher.getInstance(algorithm);

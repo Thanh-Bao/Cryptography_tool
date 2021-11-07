@@ -34,7 +34,11 @@ const ZoneDownload = (props) => {
             <Stack spacing={2}>
                 <FileDownloadOutlinedIcon sx={{ mx: 'auto' }} style={{ fontSize: "4em", color: '#969592' }} />
                 <div>
-                    <Button disabled={props.pathFileDownload ? false : true} variant="contained">Tải file về máy</Button>
+                    <a style={{ color: "blue", textDecoration: "underline", marginRight: "10px" }}
+                        target='_blank' rel="noreferrer" href={props.pathFileDownload}>{props.pathFileDownload}</a>
+                    <a target='_blank' rel="noreferrer" href={props.pathFileDownload}>
+                        <Button disabled={props.pathFileDownload ? false : true}
+                            variant="contained">Tải file về máy</Button></a>
                 </div>
             </Stack>
         </>
@@ -49,11 +53,14 @@ const Encrypt = () => {
     const [algorithm, setAlgorithm] = useState("AES");
     const [keySize, setKeySize] = useState(128);
     const [keyValue, setKeyValue] = useState("");
+    const [modeOperation, setModeOperation] = useState("ECB");
+    const [padding, setPadding] = useState("PKCS5Padding")
     const [dataInput, setDataInput] = useState("");
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState(null);
     const [pathFileDownload, setPathFileDownload] = useState(null);
     // UI
+    const [inputSize, setInputSize] = useState(0);
     const [dataOutput, setDataOutput] = useState("");
     const [showInputText, setShowInputText] = React.useState(true);
     const [showVerified, setShowVerified] = useState(true);
@@ -114,20 +121,27 @@ const Encrypt = () => {
     }
 
     const handleSubmit = () => {
+        const data = fileName ? fileName : dataInput;
         axios({
             method: 'post',
-            url: `${SITE_URL}/symmetric/crypto-text`,
+            url: `${SITE_URL}/symmetric/${fileName ? "crypto-file" : "crypto-text"}`,
             data: {
                 "key": keyValue,
-                "data": dataInput,
                 "mode": 1, // trong Cipher mode java 1 là mã hóa
-                "algorithm": algorithm
+                "algorithm": algorithm,
+                "modeOperation": modeOperation,
+                "padding": padding,
+                "data": data,
             }
         }).then((res) => {
-            setDataOutput(res.data.content);
+            if (fileName) {
+                setPathFileDownload(SITE_URL + res.data.content);
+            } else {
+                setDataOutput(res.data.content);
+            }
             router.push(`${window.location.pathname}#result-output`)
         }).catch(err => {
-            enqueueSnackbar("Lỗi mã hóa, vui lòng nhập đúng");
+            enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn đúng mode, padding, ...");
         });
     }
 
@@ -144,7 +158,10 @@ const Encrypt = () => {
                 enqueueSnackbar("Tải ảnh thành công");
                 setFileName(res.data.content);
             })
-            .catch(() => enqueueSnackbar("Lỗi tải file, vui lòng kiểm tra lại"));
+            .catch((err) => {
+                enqueueSnackbar("Lỗi tải file, vui lòng kiểm tra lại");
+                console.log(err)
+            });
     }
 
     return (
@@ -167,10 +184,13 @@ const Encrypt = () => {
             </Grid>
             <Grid item lg={9} xs={12}>
                 {showInputText ?
-                    <Form.Control as="textarea"
-                        value={dataInput}
-                        onChange={event => setDataInput(event.target.value)}
-                        rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
+                    <>
+                        <Form.Control as="textarea"
+                            value={dataInput}
+                            onChange={event => { setDataInput(event.target.value), setInputSize(event.target.value.length) }}
+                            rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
+                        {inputSize > 0 ? <div>{inputSize * 8} bit</div> : null}
+                    </>
                     :
                     <>
                         <div id="fileUploader">
@@ -191,14 +211,13 @@ const Encrypt = () => {
             </Grid>
 
             <Grid item xs={12}>
-                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Chọn thuật toán mã hóa:</div></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Chọn thuật toán mã hóa, mode & padding:</div></Divider>
             </Grid>
-            <Grid item xs={12}>
-                <FormControl sx={{ width: "30%" }}>
-                    <InputLabel>thuật toán*</InputLabel>
+            <Grid item lg={4} xs={12}>
+                <div>Thuật toán</div>
+                <FormControl >
                     <Select
                         value={algorithm}
-                        label="click để chọn"
                         onChange={handleAlgorithmChange}
                     >
                         <MenuItem value={"AES"}>
@@ -232,12 +251,61 @@ const Encrypt = () => {
                 </FormControl>
             </Grid>
 
+            <Grid item lg={3} md={5} xs={12}>
+                <div>Mode Operation</div>
+                <FormControl >
+                    <Select
+                        value={modeOperation}
+                        onChange={event => setModeOperation(event.target.value)}
+                    >
+                        <MenuItem value={"ECB"}>
+                            <span style={{ fontWeight: "bolder" }}>ECB</span> - Electronic Codebook
+                        </MenuItem>
+                        <MenuItem value={"CBC"}>
+                            <span style={{ fontWeight: "bolder" }}>CBC</span> - Cipher-Block Chaining
+                        </MenuItem>
+                        <MenuItem value={"PCBC"}>
+                            <span style={{ fontWeight: "bolder" }}>PCBC</span> - Propagating cipher-block chaining
+                        </MenuItem>
+                        <MenuItem value={"CFB"}>
+                            <span style={{ fontWeight: "bolder" }}>CFB</span> - Cipher Feedback
+                        </MenuItem>
+                        <MenuItem value={"OFB"}>
+                            <span style={{ fontWeight: "bolder" }}>OFB</span> - Output Feedback
+                        </MenuItem>
+                        <MenuItem value={"CTR"}>
+                            <span style={{ fontWeight: "bolder" }}>CTR</span> - Counter
+                        </MenuItem>
+                    </Select>
+                </FormControl>
+            </Grid>
+
+            <Grid item lg={3} md={5} xs={12}>
+                <div>Padding</div>
+                <FormControl>
+                    <Select
+                        value={padding}
+                        onChange={event => setPadding(event.target.value)}
+                    >
+                        <MenuItem value={"PKCS5Padding"}>
+                            <span style={{ fontWeight: "bolder" }}>PKCS5Padding</span>
+                        </MenuItem>
+                        <MenuItem value={"ISO10126Padding"}>
+                            <span style={{ fontWeight: "bolder" }}>ISO10126Padding</span>
+                        </MenuItem>
+                        <MenuItem value={"NoPadding"}>
+                            <span style={{ fontWeight: "bolder" }}>NoPadding</span>
+                        </MenuItem>
+                    </Select>
+                </FormControl>
+            </Grid>
+
             <Grid item xs={12}>
                 <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập key (định dạng base64):</div></Divider>
             </Grid>
-            <Grid item lg={3} xs={12}>
+            <Grid item lg={3} xs={4}>
                 <div>Chọn kích thước key</div>
-                <ChooseKeySize algorithm={algorithm} listItems={listItems} parentCallback={handleCallBack} />
+                <ChooseKeySize algorithm={algorithm} listItems={listItems} keySize={keySize} parentCallback={handleCallBack} />
                 <div>
                     <Stack direction="row"
                         sx={{ mx: "auto", justifyContent: "center", textAlign: "center", marginTop: "10px", marginLeft: "49px" }}
@@ -263,14 +331,15 @@ const Encrypt = () => {
                     rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
             </Grid>
 
+
             <Grid item xs={12}>
                 <Stack spacing={1}>
-                    {(dataInput == "" || keyValue == "") ?
+                    {((dataInput != "" && keyValue != "") || (fileName != "" && keyValue != "")) ?
                         <span>hãy nhập đủ thông tin để mã hóa</span> : null
                     }
                     <div>
                         <Button
-                            disabled={(dataInput == "" || keyValue == "") ? true : false}
+                            disabled={((dataInput != "" && keyValue != "") || (fileName != "" && keyValue != "")) ? false : true}
                             onClick={handleSubmit}
                             size="large" sx={{ fontSize: "18px" }}
                             variant="contained" startIcon={<LockIcon />}>
@@ -280,11 +349,13 @@ const Encrypt = () => {
                 </Stack>
             </Grid>
             <Grid item xs={12}>
-                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Kết quả (định dạng base64):</div></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>
+                    {showInputText ? "Kết quả (định dạng base64):" : "File đã mã hóa:"}
+                </div></Divider>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <Tooltip style={{ visibility: dataOutput != "" ? "visible" : "hidden" }}
-                    title="Copy key">
+                    title="Copy">
                     <IconButton onClick={() => { navigator.clipboard.writeText(dataOutput) }} >
                         <ContentCopyOutlinedIcon />
                     </IconButton>
