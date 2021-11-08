@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
+import gnu.crypto.cipher.BaseCipher;
 
 @RestController
 public class SymmetricControllers {
 
     //@CrossOrigin(origins = "http://localhost:3000")
     @PostMapping(value = "/symmetric/generateKey", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object generateKey(@RequestBody GetKeyDTO payload) throws NoSuchAlgorithmException {
+    public Object generateKey(@RequestBody GetKeyDTO payload) throws Exception {
         int keySize = payload.getKeySize();
         String algorithm = payload.getAlgorithm();
 
@@ -43,7 +43,12 @@ public class SymmetricControllers {
     @PostMapping(value = "/symmetric/crypto-file")
     public Object cryptoFile(@RequestBody CryptoDTO payload) throws Exception {
 System.out.println(payload);
-        String fileName = "ENCRYPTED-"+payload.getData();
+        String fileName = null;
+        if(payload.getMode()==1){
+            fileName = "ENCRYPTED-"+payload.getData();
+        } else {
+            fileName = payload.getData();
+        }
         Boolean result = Symmetric.doCryptoFile(payload.getMode(),
         payload.getKey(),payload.getModeOperation(), payload.getPadding(),
         payload.getAlgorithm(), new File(ENV.pathMedia+payload.getData()), new File(ENV.pathMedia+ fileName));

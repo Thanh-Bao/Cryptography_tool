@@ -9,7 +9,6 @@ import Divider from '@mui/material/Divider';
 import { Form } from 'react-bootstrap';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
@@ -25,7 +24,6 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useRouter } from 'next/router'
-import { styled } from '@mui/material/styles';
 
 
 const ZoneDownload = (props) => {
@@ -106,13 +104,15 @@ const Encrypt = () => {
 
     const getKeyAPI = () => {
         setShowCopyKey(true);
+        const body = {
+            "keySize": keySize,
+            "algorithm": algorithm
+        }
+        console.log("get Key request: ", body);
         axios({
             method: 'post',
             url: `${SITE_URL}/symmetric/generateKey`,
-            data: {
-                "keySize": keySize,
-                "algorithm": algorithm
-            }
+            data: body
         }).then((res) => {
             setKeyValue(res.data.content);
         }).catch(err => {
@@ -122,17 +122,19 @@ const Encrypt = () => {
 
     const handleSubmit = () => {
         const data = fileName ? fileName : dataInput;
+        const body = {
+            "key": keyValue,
+            "mode": 1, // trong Cipher mode java 1 là mã hóa
+            "algorithm": algorithm,
+            "modeOperation": modeOperation,
+            "padding": padding,
+            "data": data,
+        }
+        console.log("encrypt data request", body);
         axios({
             method: 'post',
             url: `${SITE_URL}/symmetric/${fileName ? "crypto-file" : "crypto-text"}`,
-            data: {
-                "key": keyValue,
-                "mode": 1, // trong Cipher mode java 1 là mã hóa
-                "algorithm": algorithm,
-                "modeOperation": modeOperation,
-                "padding": padding,
-                "data": data,
-            }
+            data: body
         }).then((res) => {
             if (fileName) {
                 setPathFileDownload(SITE_URL + res.data.content);
@@ -239,13 +241,16 @@ const Encrypt = () => {
                     {showVerified ?
                         <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
                             <VerifiedUserIcon style={{ color: "green", verticalAlign: 'middle' }} />
-                            <span style={{ color: "#575859" }}>Thuật toán này được java hỗ trợ</span>
+                            <span style={{ color: "#575859" }}>Thuật toán này thuộc JDK (SUN)</span>
                         </div> : null
                     }
                     {show3rd ?
                         <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
                             <InfoOutlinedIcon style={{ color: "blue", verticalAlign: 'middle' }} />
-                            <span style={{ color: "#575859" }}> Thuật toán này dùng thư viện ngoài JDK</span>
+                            <span style={{ color: "#575859" }}> Sử dụng thư viện <a
+                                target='_blank' rel="noreferrer"
+                                style={{ color: "blue", textDecoration: "underline", fontWeight: "900" }}
+                                href="https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on/1.69">Bouncy Castle 1.69</a> </span>
                         </div> : null
                     }
                 </FormControl>

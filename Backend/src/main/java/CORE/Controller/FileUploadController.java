@@ -23,24 +23,21 @@ import javax.crypto.NoSuchPaddingException;
 public class FileUploadController {
 
 
-
-    @PostMapping(value="/uploadFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/uploadFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> fileUpload(@RequestParam("file") MultipartFile file) throws IOException {
         try {
             String filename = Utility.storeFile(file);
             ResponseDTO res = new ResponseDTO("name", filename);
             return new ResponseEntity(res, HttpStatus.OK);
-        } catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity(e, HttpStatus.OK);
         }
     }
 
     @GetMapping("/test")
     public String test() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
-        Symmetric.doCryptoFile(1,"bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "AES", new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
-        Symmetric.doCryptoFile(2,"bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding","AES", new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
+        Symmetric.doCryptoFile(1, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "Twofish", new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
+        Symmetric.doCryptoFile(2, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "Twofish", new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
         return "TESTING";
     }
-
-
 }

@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -42,7 +43,7 @@ public class Utility {
         return Base64.getDecoder().decode(text);
     }
 
-    public static Key generateKey(int keySize, String algorithm) throws NoSuchAlgorithmException {
+    public static Key generateKey(int keySize, String algorithm) throws Exception {
         KeyGenerator keyGen = KeyGenerator.getInstance(algorithm);
         keyGen.init(keySize);
         SecretKey secretKey = keyGen.generateKey();
