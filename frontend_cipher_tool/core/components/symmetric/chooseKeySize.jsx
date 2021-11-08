@@ -24,7 +24,7 @@ const ChooseKeySize = props => {
     return (
         <>
             {props.algorithm != "Blowfish" ?
-                <FormControl sx={{ width: "50%", marginTop: "15px" }}>
+                <FormControl sx={{  marginTop: "15px" }}>
                     <Select
                         value={props.keySize}
                         onChange={event => { props.parentCallback(event.target.value) }}
