@@ -27,36 +27,33 @@ public class Symmetric {
     }
 
     // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
-    public static boolean doCryptoFile(int cipherMode, String keyBase64,String modeOperation, String padding, String algorithm, File inputFile, File outputFile){
+    public static boolean doCryptoFile(int cipherMode, String keyBase64,String modeOperation, String padding, String algorithm, File inputFile, File outputFile) throws Exception {
+        FileInputStream fileInputStream = new FileInputStream(inputFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+        final byte[] BUFFER = new byte[1024];
+        int bytesRead;
         try {
             Key key = Utility.Base64ToKey(keyBase64, algorithm);
             Cipher cipher = Cipher.getInstance(algorithm);
             cipher.init(cipherMode, key);
 
-            FileInputStream fileInputStream = new FileInputStream(inputFile);
-            FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-            byte[] inputBytes = new byte[(int) inputFile.length()];
-            fileInputStream.read(inputBytes);
-            int bytesRead;
-
-            while ((bytesRead = fileInputStream.read(inputBytes)) != -1) {
-                byte[] output = cipher.update(inputBytes, 0, bytesRead);
+            while ((bytesRead = fileInputStream.read(BUFFER)) != -1) {
+                byte[] output = cipher.update(BUFFER, 0, bytesRead);
                 if (output != null) {
                     fileOutputStream.write(output);
                 }
             }
-            byte[] outputBytes = cipher.doFinal(inputBytes);
+            byte[] outputBytes = cipher.doFinal(BUFFER);
             if (outputBytes != null) {
                 fileOutputStream.write(outputBytes);
             }
-
-            fileInputStream.close();
-            fileOutputStream.flush();
-            fileOutputStream.close();
-
             return true;
         } catch (Exception e){
             return false;
+        } finally {
+            fileInputStream.close();
+            fileOutputStream.flush();
+            fileOutputStream.close();
         }
     }
 }

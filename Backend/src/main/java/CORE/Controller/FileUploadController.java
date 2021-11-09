@@ -35,7 +35,7 @@ public class FileUploadController {
     }
 
     @GetMapping("/test")
-    public String test() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
+    public String test() throws Exception {
         Symmetric.doCryptoFile(1, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "Twofish", new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
         Symmetric.doCryptoFile(2, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "Twofish", new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
         return "TESTING";

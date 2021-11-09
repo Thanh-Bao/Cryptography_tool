@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import Layout from '@/layout/layout'
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -15,24 +15,60 @@ import Divider from '@mui/material/Divider';
 import Checkbox from '@mui/material/Checkbox';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import IconButton from '@mui/material/IconButton';
-
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
+import { SITE_URL } from '../core/config';
+import TextField from '@mui/material/TextField';
 
 const Hash = () => {
+    const { enqueueSnackbar } = useSnackbar();
+
     const [showInputText, setShowInputText] = React.useState(true);
     const [dataInput, setDataInput] = useState("");
-    const [dataOutput, setDataOuput] = useState("nullhihihiihih");
+    const [dataOutput, setDataOuput] = useState("null");
+    const [algorithm, setAlgorithm] = useState("MD5");
+    const [hashMatch, setHashMatch] = useState("");
+    const [INHOA, setINHOA] = useState(false);
 
     const handleSwitch = () => {
         setShowInputText(!showInputText);
+        setDataInput("");
+        setDataOuput("");
     };
 
     const onFormSubmitFile = (e) => {
 
     }
 
+    // send data to backend
+    useEffect(() => {
+        const body = {
+            "algorithm": algorithm,
+            "data": dataInput
+        }
+        if (dataInput.length > 0) {
+            axios({
+                method: 'post',
+                url: `${SITE_URL}/hash-text`,
+                data: body
+            }).then((res) => {
+                setDataOuput(res.data.content);
+            }).catch(err => {
+                enqueueSnackbar("lỗi, vui lòng kiểm tra lại");
+                setDataOuput("Lỗi tạo hash")
+            });
+        } else {
+            setDataOuput("null")
+        }
+    }, [dataInput, algorithm]);
+
+
+
     return (
         <Layout>
-            <Grid sx={{ justifyContent: 'center', textAlign: "center", mx: 'auto', marginTop: "80px" }}
+            <Grid sx={{ justifyContent: 'center', textAlign: "center", mx: 'auto', marginTop: "40px" }}
                 container >
                 <Grid item xs={12}>
                     <div style={{ fontSize: '20px' }}>{showInputText ? "Nhập dữ liệu cần mã hóa:" : "Tải lên file cần mã hóa:"}</div>
@@ -78,33 +114,77 @@ const Hash = () => {
                 </Grid>
 
                 <Grid item xs={12}>
-                    <Divider style={{ marginTop: "100px", marginBottom: "30px" }}> <div style={{ fontSize: '20px' }}>
+                    <Divider style={{ marginTop: "30px", marginBottom: "30px" }}> <div style={{ fontSize: '20px' }}>
+                        Chọn thuật toán hash
+                    </div></Divider>
+                </Grid>
+
+                <Grid item lg={2} xs={12}>
+                    <FormControl >
+                        <Select
+                            value={algorithm}
+                            onChange={event => setAlgorithm(event.target.value)}
+                        >
+                            <MenuItem value={"MD5"}>
+                                <span style={{ fontWeight: "bolder" }}>MD5</span>
+                            </MenuItem>
+                            <MenuItem value={"SHA-1"}>
+                                <span style={{ fontWeight: "bolder" }}>SHA-1</span>
+                            </MenuItem>
+                            <MenuItem value={"SHA-256"}>
+                                <span style={{ fontWeight: "bolder" }}>SHA-256</span>
+                            </MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                    <Divider style={{ marginTop: "30px", marginBottom: "30px" }}> <div style={{ fontSize: '20px' }}>
                         Kết quả:
                     </div></Divider>
                 </Grid>
 
                 <Grid item lg={2} xs={12}>
                     <div style={{ marginBottom: "3%" }}>
-                        <Checkbox onChange={e => console.log(e.target.checked)} />In hoa
+                        <Checkbox onChange={e => setINHOA(e.target.checked)} />In hoa
                     </div>
                     <div>
-                    <IconButton onClick={() => { navigator.clipboard.writeText(dataOutput) }} >
-                        <ContentCopyOutlinedIcon /> 
-                    </IconButton> Copy
+                        <IconButton onClick={() => { navigator.clipboard.writeText(dataOutput) }} >
+                            <ContentCopyOutlinedIcon />
+                        </IconButton> Copy
                     </div>
                 </Grid>
                 <Grid item lg={10} xs={12}>
-                    <Box sx={{ fontWeight: "900", fontSize: "1.5em" }}>
-                        {dataInput}
+                    <Box sx={{ fontWeight: "900", fontSize: "1.5em", textTransform: `${INHOA ? "uppercase" : "lowercase"}` }}>
+                        {dataOutput}
                     </Box>
                 </Grid>
+
+                <Grid item xs={12}>
+                    <Divider style={{ marginTop: "30px", marginBottom: "30px" }}> <div style={{ fontSize: '20px' }}>
+                        So khớp với hash cho trước:
+                    </div></Divider>
+                </Grid>
+
+                <Grid item lg={3}>
+                </Grid>
+                <Grid item lg={9} xs={12}>
+                    <Box>
+                        <TextField
+                            onChange={e => setHashMatch(e.target.value)}
+                            style={{ width: "80%" }}
+                            label="Nhập hash cần kiểm tra" variant="outlined" />
+                    </Box>
+                    {hashMatch.length > 0 ?
+                        <h2 style={{ fontWeight: "900" }}>{dataOutput.toLocaleLowerCase() == hashMatch.toLocaleLowerCase() ?
+                            <span style={{ color: "green" }}>match</span> :
+                            <span style={{ color: "red" }}>không match</span>}
+                        </h2>
+                        : null}
+
+                </Grid>
+
             </Grid>
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
             <br />
         </Layout>
     )

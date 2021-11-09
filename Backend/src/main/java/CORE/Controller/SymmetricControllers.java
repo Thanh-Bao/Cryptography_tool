@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import gnu.crypto.cipher.BaseCipher;
+
 
 @RestController
 public class SymmetricControllers {
@@ -35,25 +34,25 @@ public class SymmetricControllers {
     public Object cryptoText(@RequestBody CryptoDTO payload) throws Exception {
         String encrypted = Symmetric.doCryptoText(payload.getMode(), payload.getKey(),
                 payload.getModeOperation(), payload.getPadding()
-                , payload.getAlgorithm(),payload.getData());
+                , payload.getAlgorithm(), payload.getData());
         ResponseDTO res = new ResponseDTO("base64", encrypted);
         return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
     }
 
     @PostMapping(value = "/symmetric/crypto-file")
     public Object cryptoFile(@RequestBody CryptoDTO payload) throws Exception {
-System.out.println(payload);
+
         String fileName = null;
-        if(payload.getMode()==1){
-            fileName = "ENCRYPTED-"+payload.getData();
+        if (payload.getMode() == 1) {
+            fileName = "ENCRYPTED-" + payload.getData();
         } else {
             fileName = payload.getData();
         }
         Boolean result = Symmetric.doCryptoFile(payload.getMode(),
-        payload.getKey(),payload.getModeOperation(), payload.getPadding(),
-        payload.getAlgorithm(), new File(ENV.pathMedia+payload.getData()), new File(ENV.pathMedia+ fileName));
-        if(result){
-            ResponseDTO res = new ResponseDTO("link", "/files/"+fileName);
+                payload.getKey(), payload.getModeOperation(), payload.getPadding(),
+                payload.getAlgorithm(), new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
+        if (result) {
+            ResponseDTO res = new ResponseDTO("link", "/files/" + fileName);
             return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
         } else {
             throw new Exception("Loi ma hoa/ giai ma file");
