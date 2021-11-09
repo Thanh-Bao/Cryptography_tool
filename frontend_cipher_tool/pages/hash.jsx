@@ -11,10 +11,16 @@ import FormLabel from '@mui/material/FormLabel';
 import { Form } from 'react-bootstrap';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import Checkbox from '@mui/material/Checkbox';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import IconButton from '@mui/material/IconButton';
+
 
 const Hash = () => {
     const [showInputText, setShowInputText] = React.useState(true);
     const [dataInput, setDataInput] = useState("");
+    const [dataOutput, setDataOuput] = useState("nullhihihiihih");
 
     const handleSwitch = () => {
         setShowInputText(!showInputText);
@@ -26,8 +32,8 @@ const Hash = () => {
 
     return (
         <Layout>
-            <Grid sx={{  justifyContent: 'center', textAlign: "center", mx: 'auto' }}
-                container spacing={2}>
+            <Grid sx={{ justifyContent: 'center', textAlign: "center", mx: 'auto', marginTop: "80px" }}
+                container >
                 <Grid item xs={12}>
                     <div style={{ fontSize: '20px' }}>{showInputText ? "Nhập dữ liệu cần mã hóa:" : "Tải lên file cần mã hóa:"}</div>
                 </Grid>
@@ -50,7 +56,7 @@ const Hash = () => {
                                 value={dataInput}
                                 onChange={event => { setDataInput(event.target.value) }}
                                 rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
-                            
+
                         </>
                         :
                         <>
@@ -70,7 +76,36 @@ const Hash = () => {
                         </>
                     }
                 </Grid>
+
+                <Grid item xs={12}>
+                    <Divider style={{ marginTop: "100px", marginBottom: "30px" }}> <div style={{ fontSize: '20px' }}>
+                        Kết quả:
+                    </div></Divider>
+                </Grid>
+
+                <Grid item lg={2} xs={12}>
+                    <div style={{ marginBottom: "3%" }}>
+                        <Checkbox onChange={e => console.log(e.target.checked)} />In hoa
+                    </div>
+                    <div>
+                    <IconButton onClick={() => { navigator.clipboard.writeText(dataOutput) }} >
+                        <ContentCopyOutlinedIcon /> 
+                    </IconButton> Copy
+                    </div>
+                </Grid>
+                <Grid item lg={10} xs={12}>
+                    <Box sx={{ fontWeight: "900", fontSize: "1.5em" }}>
+                        {dataInput}
+                    </Box>
+                </Grid>
             </Grid>
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
         </Layout>
     )
 }

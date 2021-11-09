@@ -23,7 +23,8 @@ import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
+
 
 
 const ZoneDownload = (props) => {
