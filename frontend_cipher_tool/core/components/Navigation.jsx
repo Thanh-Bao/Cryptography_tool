@@ -66,7 +66,7 @@ const TemporaryDrawer = props => {
         >
             <List>
                 {menuItems.map(({ label, link }) => (
-                    <ListItem button key={link}>
+                    <ListItem button component="a" key={link} href={link}>
                         <ListItemText primary={label} />
                     </ListItem>
                 ))}
