@@ -7,6 +7,8 @@ import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
+import NumericInput from 'material-ui-numeric-input';
+
 
 const ChooseKeySize = props => {
     const [showError, setShowError] = useState(false);
@@ -14,9 +16,10 @@ const ChooseKeySize = props => {
     const handleChange = (event) => {
         const value = parseInt(event.target.value);
         if (value >= 32 && value <= 448 && value % 8 == 0) {
-            props.parentCallback(value);
+            props.parentCallback({ "keySize": value, "disableGenKey": false });
             setShowError(false);
         } else {
+            props.parentCallback({ "keySize": value, "disableGenKey": true });
             setShowError(true);
         }
     }
@@ -24,10 +27,10 @@ const ChooseKeySize = props => {
     return (
         <>
             {props.algorithm != "Blowfish" ?
-                <FormControl sx={{  marginTop: "15px" }}>
+                <FormControl sx={{ marginTop: "15px" }}>
                     <Select
                         value={props.keySize}
-                        onChange={event => { props.parentCallback(event.target.value) }}
+                        onChange={event => { props.parentCallback({ "keySize": event.target.value }) }}
                     >
                         {props.listItems.map((item) => {
                             return (
@@ -41,7 +44,11 @@ const ChooseKeySize = props => {
                 <>
                     <Stack style={{ marginTop: "10px" }} spacing={2}>
                         <div>
-                            <TextField error={showError}
+                            <NumericInput
+                                precision={0}
+                                decimalChar=','
+                                thousandChar=' '
+                                error={showError}
                                 onChange={handleChange}
                                 defaultValue={32}
                                 helperText="key size từ 32->448 bit & là bội của 8"

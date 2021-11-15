@@ -2404,6 +2404,11 @@ make-dir@^3.0.2:
   dependencies:
     semver "^6.0.0"
 
+material-ui-numeric-input@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/material-ui-numeric-input/-/material-ui-numeric-input-3.0.3.tgz#0f40e40980a84ef4fc770a07a579b5079f61b4bd"
+  integrity sha512-vwCKdDv1k2bcMkOdGsVbM+6rN3qTUh72a5ndnVdvOei4uITblyXpabDIjf98dcfGp10pi/v6vAIEUxo7Bi69ew==
+
 md5.js@^1.3.4:
   version "1.3.5"
   resolved "https://registry.npmjs.org/md5.js/-/md5.js-1.3.5.tgz"

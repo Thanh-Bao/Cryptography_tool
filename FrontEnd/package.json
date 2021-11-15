@@ -16,6 +16,7 @@
     "@mui/styles": "^5.0.1",
     "axios": "^0.23.0",
     "bootstrap": "^5.1.3",
+    "material-ui-numeric-input": "^3.0.3",
     "next": "11.1.2",
     "notistack": "^2.0.2",
     "react": "17.0.2",

@@ -34,7 +34,7 @@ public class SymmetricControllers {
     public Object cryptoText(@RequestBody CryptoDTO payload) throws Exception {
         String encrypted = Symmetric.doCryptoText(payload.getMode(), payload.getKey(),
                 payload.getModeOperation(), payload.getPadding()
-                , payload.getAlgorithm(), payload.getData());
+                , payload.getAlgorithm(), payload.getIv(), payload.getData());
         ResponseDTO res = new ResponseDTO("base64", encrypted);
         return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
     }
@@ -50,7 +50,7 @@ public class SymmetricControllers {
         }
         Boolean result = Symmetric.doCryptoFile(payload.getMode(),
                 payload.getKey(), payload.getModeOperation(), payload.getPadding(),
-                payload.getAlgorithm(), new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
+                payload.getAlgorithm(), payload.getIv(), new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
         if (result) {
             ResponseDTO res = new ResponseDTO("link", "/files/" + fileName);
             return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);

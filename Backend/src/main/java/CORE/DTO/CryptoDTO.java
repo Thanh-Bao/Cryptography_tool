@@ -6,14 +6,16 @@ public class CryptoDTO {
     private String algorithm;
     private String modeOperation;
     private String padding;
+    private String iv;
     private String data;
 
-    public CryptoDTO(String key, int mode, String algorithm, String modeOperation, String padding, String data) {
+    public CryptoDTO(String key, int mode, String algorithm, String modeOperation, String padding, String iv, String data) {
         this.key = key;
         this.mode = mode;
         this.algorithm = algorithm;
         this.modeOperation = modeOperation;
         this.padding = padding;
+        this.iv = iv;
         this.data = data;
     }
 
@@ -21,47 +23,27 @@ public class CryptoDTO {
         return key;
     }
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
     public int getMode() {
         return mode;
-    }
-
-    public void setMode(int mode) {
-        this.mode = mode;
     }
 
     public String getAlgorithm() {
         return algorithm;
     }
 
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
-    }
-
     public String getModeOperation() {
         return modeOperation;
-    }
-
-    public void setModeOperation(String modeOperation) {
-        this.modeOperation = modeOperation;
     }
 
     public String getPadding() {
         return padding;
     }
 
-    public void setPadding(String padding) {
-        this.padding = padding;
+    public String getIv() {
+        return iv;
     }
 
     public String getData() {
         return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
     }
 }

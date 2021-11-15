@@ -4,39 +4,51 @@ import CORE.Utility;
 
 import java.io.*;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 public class Symmetric {
 
     // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
-    public static String doCryptoText(int cipherMode, String keyBase64, String modeOperation, String padding, String algorithm,String data) throws Exception {
+    public static String doCryptoText(int cipherMode, String keyBase64, String modeOperation, String padding, String algorithm, String iv, String data) throws Exception {
         Key key = Utility.Base64ToKey(keyBase64, algorithm);
-        Cipher c = Cipher.getInstance(algorithm+"/"+modeOperation+"/"+padding);
-        c.init(cipherMode, key);
-
+        Cipher cipher = Cipher.getInstance(algorithm+"/"+modeOperation+"/"+padding);
+        if(modeOperation.equals("ECB")){
+            cipher.init(cipherMode, key);
+        } else {
+            cipher.init(cipherMode, key, new IvParameterSpec(iv.getBytes()));
+        }
+        System.out.println(cipher.getBlockSize());
         byte[] encVal = null;
         String result = null;
         if (cipherMode == 1) {
-            encVal = c.doFinal(data.getBytes());
+            encVal = cipher.doFinal(data.getBytes());
             result = Utility.byteArrToBASE64(encVal);
         } else {
-            encVal = c.doFinal(Utility.BASE64ToByteArr(data));
+            encVal = cipher.doFinal(Utility.BASE64ToByteArr(data));
             result = new String(encVal);
         }
         return result;
     }
 
     // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
-    public static boolean doCryptoFile(int cipherMode, String keyBase64,String modeOperation, String padding, String algorithm, File inputFile, File outputFile) throws Exception {
+    public static boolean doCryptoFile(int cipherMode, String keyBase64,String modeOperation, String padding, String algorithm, String iv, File inputFile, File outputFile) throws Exception {
         FileInputStream fileInputStream = new FileInputStream(inputFile);
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
         final byte[] BUFFER = new byte[1024];
         int bytesRead;
         try {
             Key key = Utility.Base64ToKey(keyBase64, algorithm);
-            Cipher cipher = Cipher.getInstance(algorithm);
+            Cipher cipher = Cipher.getInstance(algorithm+"/"+modeOperation+"/"+padding);
             cipher.init(cipherMode, key);
-
+            if(modeOperation.equals("ECB")){
+                cipher.init(cipherMode, key);
+            } else {
+                cipher.init(cipherMode, key, new IvParameterSpec(iv.getBytes()));
+            }
             while ((bytesRead = fileInputStream.read(BUFFER)) != -1) {
                 byte[] output = cipher.update(BUFFER, 0, bytesRead);
                 if (output != null) {
@@ -57,4 +69,6 @@ public class Symmetric {
         }
     }
 }
+// cipher.getBlockSize()  RC5, DES, blowfish => blockSize = 8
+// cipher.getBlockSize() AES, twofish, serpent => blockSize = 16
 

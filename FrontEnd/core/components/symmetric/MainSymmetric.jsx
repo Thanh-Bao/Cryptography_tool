@@ -24,7 +24,9 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useRouter } from 'next/router';
-
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Box from '@mui/material/Box';
 
 
 const ZoneDownload = (props) => {
@@ -45,19 +47,22 @@ const ZoneDownload = (props) => {
 }
 
 
-const Encrypt = () => {
+const MainSymmetric = () => {
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
 
     const [algorithm, setAlgorithm] = useState("AES");
     const [keySize, setKeySize] = useState(128);
     const [keyValue, setKeyValue] = useState("");
+    const [IVValue, setIVValue] = useState("");
+    const [cipherMode, setCipherMode] = useState(1);
     const [modeOperation, setModeOperation] = useState("ECB");
     const [padding, setPadding] = useState("PKCS5Padding")
     const [dataInput, setDataInput] = useState("");
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState(null);
     const [pathFileDownload, setPathFileDownload] = useState(null);
+    const [blockSize, setBlockSize] = useState(16); //AES
     // UI
     const [inputSize, setInputSize] = useState(0);
     const [dataOutput, setDataOutput] = useState("");
@@ -65,7 +70,9 @@ const Encrypt = () => {
     const [showVerified, setShowVerified] = useState(true);
     const [listItems, setListItems] = useState([128, 192, 256]);
     const [showCopyKey, setShowCopyKey] = useState(false);
+    const [showCopyIV, setShowCopyIV] = useState(false);
     const [show3rd, setShow3rd] = useState(false);
+    const [disabledGenKey, setDisabledGenKey] = useState(false);
 
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
@@ -81,16 +88,18 @@ const Encrypt = () => {
             case "DES":
                 setListItems([56]);
                 setKeySize(56);
+                setBlockSize(8)
                 break;
-            case "Serpent":
             case "AES":
             case "Twofish":
             case "Serpent":
                 setListItems([128, 192, 256]);
                 setKeySize(128);
+                setBlockSize(16)
                 break;
             case "Blowfish":
                 setKeySize(32);
+                setBlockSize(8)
                 break;
         }
     };
@@ -99,8 +108,9 @@ const Encrypt = () => {
         setShowInputText(!showInputText);
     };
 
-    const handleCallBack = (keySize) => {
-        setKeySize(keySize);
+    const handleCallBack = (data) => {
+        setDisabledGenKey(data.disableGenKey);
+        setKeySize(data.keySize);
     }
 
     const getKeyAPI = () => {
@@ -120,15 +130,20 @@ const Encrypt = () => {
             enqueueSnackbar("Lỗi tạo key, vui lòng chọn đúng");
         });
     }
+    const getIV_API = () => {
+        setShowCopyIV(true);
+        setIVValue(genIV(blockSize));
+    }
 
     const handleSubmit = () => {
         const data = fileName ? fileName : dataInput;
         const body = {
             "key": keyValue,
-            "mode": 1, // trong Cipher mode java 1 là mã hóa
+            "mode": cipherMode, // trong Cipher mode java 1 là mã hóa
             "algorithm": algorithm,
             "modeOperation": modeOperation,
             "padding": padding,
+            "iv": IVValue,
             "data": data,
         }
         console.log("encrypt data request", body);
@@ -144,7 +159,7 @@ const Encrypt = () => {
             }
             router.push(`${window.location.pathname}#result-output`)
         }).catch(err => {
-            enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn đúng mode, padding, ...");
+            enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn các options");
         });
     }
 
@@ -167,11 +182,34 @@ const Encrypt = () => {
             });
     }
 
+    function genIV(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
+
+
     return (
         <Grid sx={{ justifyContent: 'center', textAlign: "center", mx: 'auto' }}
             container spacing={2}>
+            <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                <ToggleButtonGroup
+                    color="primary"
+                    value={cipherMode}
+                    exclusive
+                    onChange={(e, newValue) => { setCipherMode(newValue) }}
+                >
+                    <ToggleButton value={1}><span style={{ fontWeight: 900, fontSize: "1.2em" }}>Mã Hóa</span></ToggleButton>
+                    <ToggleButton value={2}><span style={{ fontWeight: 900, fontSize: "1.2em" }}>Giải Mã</span></ToggleButton>
+                </ToggleButtonGroup>
+            </div>
             <Grid item xs={12}>
-                <div style={{ fontSize: '20px' }}>{showInputText ? "Nhập dữ liệu cần mã hóa:" : "Tải lên file cần mã hóa:"}</div>
+                <div style={{ fontSize: '20px' }}>{showInputText ? `Nhập text cần ${cipherMode == 1 ? "mã hóa" : "giải mã"} :` : "Tải lên file cần mã hóa:"}</div>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <FormControl >
@@ -306,6 +344,40 @@ const Encrypt = () => {
                 </FormControl>
             </Grid>
 
+            {modeOperation == "ECB" ? null :
+                <>
+                    <Grid item xs={12}>
+                        <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập initialization vector (IV)</div></Divider>
+                    </Grid>
+                    <Grid item lg={3} xs={4}>
+                        <div>
+                            <Stack direction="row"
+                                sx={{ mx: "auto", justifyContent: "center", textAlign: "center", marginTop: "10px", marginLeft: "49px" }}
+                                spacing={1}>
+                                <Tooltip title="Mỗi ký tự ASCII có kích thước 1 byte">
+                                    <Button
+                                        onClick={getIV_API}
+                                        variant="contained">Tạo IV ngẫu nhiên {blockSize} ký tự</Button>
+                                </Tooltip>
+                                <Tooltip style={{ visibility: showCopyIV ? "visible" : "hidden" }}
+                                    title="Copy key">
+                                    <IconButton onClick={() => { navigator.clipboard.writeText(IVValue) }} >
+                                        <ContentCopyOutlinedIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            </Stack>
+                        </div>
+                    </Grid>
+                    <Grid item lg={9} xs={12}>
+                        <Form.Control as="textarea"
+                            value={IVValue}
+                            onChange={e => { setIVValue(e.target.value); if (IVValue == "") { setShowCopyIV(false) } }}
+                            rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
+                        <div>IV có kích thước <b>{blockSize} bytes</b> ({blockSize * 8} bits) đối với thuật toán <b>{algorithm}</b> </div>
+                    </Grid>
+                </>
+            }
+
             <Grid item xs={12}>
                 <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập key (định dạng base64):</div></Divider>
             </Grid>
@@ -317,7 +389,9 @@ const Encrypt = () => {
                         sx={{ mx: "auto", justifyContent: "center", textAlign: "center", marginTop: "10px", marginLeft: "49px" }}
                         spacing={1}>
                         <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
-                            <Button onClick={getKeyAPI} variant="contained">Tạo key ngẫu nhiên</Button>
+                            <Button disabled={disabledGenKey}
+                                onClick={getKeyAPI}
+                                variant="contained">Tạo key ngẫu nhiên</Button>
                         </Tooltip>
                         <Tooltip style={{ visibility: showCopyKey ? "visible" : "hidden" }}
                             title="Copy key">
@@ -349,7 +423,7 @@ const Encrypt = () => {
                             onClick={handleSubmit}
                             size="large" sx={{ fontSize: "18px" }}
                             variant="contained" startIcon={<LockIcon />}>
-                            Mã hóa
+                            {cipherMode == 1 ? "MÃ HÓA" : "GIẢI MÃ"}
                         </Button>
                     </div>
                 </Stack>
@@ -361,7 +435,7 @@ const Encrypt = () => {
             </Grid>
             <Grid item lg={3} xs={12}>
                 <Tooltip style={{ visibility: dataOutput != "" ? "visible" : "hidden" }}
-                    title="Copy">
+                    title="Copy kết quả">
                     <IconButton onClick={() => { navigator.clipboard.writeText(dataOutput) }} >
                         <ContentCopyOutlinedIcon />
                     </IconButton>
@@ -385,4 +459,4 @@ const Encrypt = () => {
     )
 }
 
-export default Encrypt
+export default MainSymmetric
