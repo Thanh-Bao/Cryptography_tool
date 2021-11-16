@@ -33,10 +33,7 @@ const menuItems = [
         label: "Mã hóa bất đối xứng",
         link: "/asymmetric"
     },
-    {
-        label: "Mã hóa kết hợp",
-        link: "/mix"
-    },
+    
     {
         label: "Hash - băm",
         link: "/hash"

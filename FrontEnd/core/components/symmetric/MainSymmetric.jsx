@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import Grid from '@mui/material/Grid';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -73,6 +73,8 @@ const MainSymmetric = () => {
     const [showCopyIV, setShowCopyIV] = useState(false);
     const [show3rd, setShow3rd] = useState(false);
     const [disabledGenKey, setDisabledGenKey] = useState(false);
+    const [showSubmit, setShowSubmit] = useState(false);
+    const [uploadFileWarning, setUploadFileWarning] = useState(false);
 
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
@@ -193,6 +195,58 @@ const MainSymmetric = () => {
         return result;
     }
 
+    const switchCryptMode = (e, newValue) => {
+        setCipherMode(newValue);
+        setPathFileDownload(null);
+        setFileName(null);
+        setDataInput("");
+        setDataOutput("");
+        setFile(null);
+    }
+
+    useEffect(() => {
+        if (fileName != null) {
+            setUploadFileWarning(false);
+        }
+
+        if (showInputText) {
+            setUploadFileWarning(false);
+            if (modeOperation == "ECB") {
+                if (dataInput != "" && keyValue != "")
+                    setShowSubmit(true);
+                else setShowSubmit(false);
+            } else {
+                if (dataInput != "" && keyValue != "" && IVValue != "")
+                    setShowSubmit(true);
+                else setShowSubmit(false);
+            }
+        } else {
+            if (modeOperation == "ECB") {
+                if (fileName != null && keyValue != "") {
+                    setShowSubmit(true);
+                }
+                else {
+                    setShowSubmit(false);
+                }
+                if (fileName == null && keyValue != "") {
+                    setUploadFileWarning(true);
+                }
+            } else {
+                if (fileName != null && keyValue != "" && IVValue != "") {
+                    setShowSubmit(true);
+                }
+                else {
+                    setShowSubmit(false);
+                    if (fileName == null && keyValue != "" && IVValue != "") {
+                        setUploadFileWarning(true);
+                    }
+                }
+
+            }
+        }
+
+    }, [keyValue, IVValue, modeOperation, showInputText, fileName, dataInput]);
+
 
     return (
         <Grid sx={{ justifyContent: 'center', textAlign: "center", mx: 'auto' }}
@@ -202,14 +256,14 @@ const MainSymmetric = () => {
                     color="primary"
                     value={cipherMode}
                     exclusive
-                    onChange={(e, newValue) => { setCipherMode(newValue) }}
+                    onChange={switchCryptMode}
                 >
                     <ToggleButton value={1}><span style={{ fontWeight: 900, fontSize: "1.2em" }}>Mã Hóa</span></ToggleButton>
                     <ToggleButton value={2}><span style={{ fontWeight: 900, fontSize: "1.2em" }}>Giải Mã</span></ToggleButton>
                 </ToggleButtonGroup>
             </div>
             <Grid item xs={12}>
-                <div style={{ fontSize: '20px' }}>{showInputText ? `Nhập text cần ${cipherMode == 1 ? "mã hóa" : "giải mã"} :` : "Tải lên file cần mã hóa:"}</div>
+                <div style={{ fontSize: '20px' }}>Nhập {showInputText ? "text" : "file"} cần {cipherMode == 1 ? "mã hóa" : "giải mã"} :</div>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <FormControl >
@@ -414,12 +468,18 @@ const MainSymmetric = () => {
 
             <Grid item xs={12}>
                 <Stack spacing={1}>
-                    {((dataInput != "" && keyValue != "") || (fileName != "" && keyValue != "")) ?
-                        <span>hãy nhập đủ thông tin để mã hóa</span> : null
-                    }
+                    <span style={{ color: "red", fontWeight: "900" }}>
+                        {uploadFileWarning ?
+                            <span>Bạn chưa upload file!</span> :
+                            (!showSubmit ?
+                                <span>hãy nhập đủ thông tin để {cipherMode == 1 ? "mã hóa" : "giải mã"}</span> : null
+                            )
+                        }
+                    </span>
+
                     <div>
                         <Button
-                            disabled={((dataInput != "" && keyValue != "") || (fileName != "" && keyValue != "")) ? false : true}
+                            disabled={!showSubmit}
                             onClick={handleSubmit}
                             size="large" sx={{ fontSize: "18px" }}
                             variant="contained" startIcon={<LockIcon />}>
@@ -454,6 +514,9 @@ const MainSymmetric = () => {
                 <Grid item xs={12}>
                     <ZoneDownload pathFileDownload={pathFileDownload} />
                 </Grid>
+            }
+            {cipherMode == 1 && dataOutput != "" || pathFileDownload!=null ?
+                <h3 style={{ color: "green" }}>Vui lòng lưu lại IV, key, thuật toán, mode, padding để giải mã</h3> : null
             }
         </Grid >
     )

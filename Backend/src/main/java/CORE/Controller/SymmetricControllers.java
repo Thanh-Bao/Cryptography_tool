@@ -32,9 +32,9 @@ public class SymmetricControllers {
 
     @PostMapping(value = "/symmetric/crypto-text")
     public Object cryptoText(@RequestBody CryptoDTO payload) throws Exception {
-        String encrypted = Symmetric.doCryptoText(payload.getMode(), payload.getKey(),
+        String encrypted = new Symmetric(payload.getMode(), payload.getKey(),
                 payload.getModeOperation(), payload.getPadding()
-                , payload.getAlgorithm(), payload.getIv(), payload.getData());
+                , payload.getAlgorithm(), payload.getIv()).doCryptoText(payload.getData());
         ResponseDTO res = new ResponseDTO("base64", encrypted);
         return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
     }
@@ -46,11 +46,14 @@ public class SymmetricControllers {
         if (payload.getMode() == 1) {
             fileName = "ENCRYPTED-" + payload.getData();
         } else {
-            fileName = "DECRYPTED-" +payload.getData();
+            fileName = "DECRYPTED-" + payload.getData();
         }
-        Symmetric.doCryptoFile(payload.getMode(),
-                payload.getKey(), payload.getModeOperation(), payload.getPadding(),
-                payload.getAlgorithm(), payload.getIv(), new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
+        new Symmetric(payload.getMode(),
+                payload.getKey(),
+                payload.getModeOperation(),
+                payload.getPadding(),
+                payload.getAlgorithm(),
+                payload.getIv()).doCryptoFile(new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
 
         ResponseDTO res = new ResponseDTO("link", "/files/" + fileName);
         return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
