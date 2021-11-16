@@ -46,17 +46,15 @@ public class SymmetricControllers {
         if (payload.getMode() == 1) {
             fileName = "ENCRYPTED-" + payload.getData();
         } else {
-            fileName = payload.getData();
+            fileName = "DECRYPTED-" +payload.getData();
         }
-        Boolean result = Symmetric.doCryptoFile(payload.getMode(),
+        Symmetric.doCryptoFile(payload.getMode(),
                 payload.getKey(), payload.getModeOperation(), payload.getPadding(),
                 payload.getAlgorithm(), payload.getIv(), new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
-        if (result) {
-            ResponseDTO res = new ResponseDTO("link", "/files/" + fileName);
-            return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
-        } else {
-            throw new Exception("Loi ma hoa/ giai ma file");
-        }
+
+        ResponseDTO res = new ResponseDTO("link", "/files/" + fileName);
+        return new ResponseEntity<ResponseDTO>(res, HttpStatus.OK);
+
     }
 }
 

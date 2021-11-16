@@ -34,10 +34,10 @@ public class FileUploadController {
         }
     }
 
-    /*@GetMapping("/test")
+    @GetMapping("/test")
     public String test() throws Exception {
-        Symmetric.doCryptoFile(1, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "Twofish", new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
-        Symmetric.doCryptoFile(2, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "Twofish", new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
+        Symmetric.doCryptoFile(1, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "AES", "Ap35CeaK&=301^wa", new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
+        Symmetric.doCryptoFile(2, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "AES","Ap35CeaK&=301^wa", new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
         return "TESTING";
-    }*/
+    }
 }

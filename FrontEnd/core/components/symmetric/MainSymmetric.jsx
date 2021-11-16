@@ -173,7 +173,7 @@ const MainSymmetric = () => {
 
         axios.post(`${SITE_URL}/uploadFile`, formData, config)
             .then((res) => {
-                enqueueSnackbar("Tải ảnh thành công");
+                enqueueSnackbar("Tải file thành công");
                 setFileName(res.data.content);
             })
             .catch((err) => {

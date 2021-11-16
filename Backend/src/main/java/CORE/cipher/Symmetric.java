@@ -21,7 +21,6 @@ public class Symmetric {
         } else {
             cipher.init(cipherMode, key, new IvParameterSpec(iv.getBytes()));
         }
-        System.out.println(cipher.getBlockSize());
         byte[] encVal = null;
         String result = null;
         if (cipherMode == 1) {
@@ -43,7 +42,6 @@ public class Symmetric {
         try {
             Key key = Utility.Base64ToKey(keyBase64, algorithm);
             Cipher cipher = Cipher.getInstance(algorithm+"/"+modeOperation+"/"+padding);
-            cipher.init(cipherMode, key);
             if(modeOperation.equals("ECB")){
                 cipher.init(cipherMode, key);
             } else {
@@ -61,6 +59,7 @@ public class Symmetric {
             }
             return true;
         } catch (Exception e){
+            e.printStackTrace();
             return false;
         } finally {
             fileInputStream.close();
