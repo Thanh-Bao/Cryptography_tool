@@ -35,7 +35,7 @@ const menuItems = [
     },
     
     {
-        label: "Hash - băm",
+        label: "Hash",
         link: "/hash"
     },
 ]

@@ -12,7 +12,7 @@ import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import ChooseKeySize from "@/components/symmetric/chooseKeySize";
+import ChooseKeySize from "@/components/asymmetric/chooseKeySize";
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
@@ -27,7 +27,11 @@ import { useRouter } from 'next/router';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
-
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 const ZoneDownload = (props) => {
     return (
@@ -47,17 +51,19 @@ const ZoneDownload = (props) => {
 }
 
 
-const MainSymmetric = () => {
+const MainAsymmetric = () => {
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
 
-    const [algorithm, setAlgorithm] = useState("AES");
-    const [keySize, setKeySize] = useState(128);
+    const [algorithm, setAlgorithm] = useState("RSA");
+    const [keySize, setKeySize] = useState(1024);
     const [keyValue, setKeyValue] = useState("");
+    const [publicKeyValue, setPublicKeyValue] = useState("");
+    const [privateKeyValue, setPrivateKeyValue] = useState("");
     const [IVValue, setIVValue] = useState("");
     const [cipherMode, setCipherMode] = useState(1);
     const [modeOperation, setModeOperation] = useState("ECB");
-    const [padding, setPadding] = useState("PKCS5Padding")
+    const [padding, setPadding] = useState("PKCS1Padding")
     const [dataInput, setDataInput] = useState("");
     const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState(null);
@@ -71,7 +77,6 @@ const MainSymmetric = () => {
     const [listItems, setListItems] = useState([128, 192, 256]);
     const [showCopyKey, setShowCopyKey] = useState(false);
     const [showCopyIV, setShowCopyIV] = useState(false);
-    const [show3rd, setShow3rd] = useState(false);
     const [disabledGenKey, setDisabledGenKey] = useState(false);
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
@@ -79,30 +84,10 @@ const MainSymmetric = () => {
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
         setAlgorithm(value);
-        if (value == "AES" || value == "DES" || value == "Blowfish") {
+        if (value == "RSA") {
             setShowVerified(true);
-            setShow3rd(false);
         } else {
-            setShow3rd(true);
             setShowVerified(false);
-        }
-        switch (value) {
-            case "DES":
-                setListItems([56]);
-                setKeySize(56);
-                setBlockSize(8)
-                break;
-            case "AES":
-            case "Twofish":
-            case "Serpent":
-                setListItems([128, 192, 256]);
-                setKeySize(128);
-                setBlockSize(16)
-                break;
-            case "Blowfish":
-                setKeySize(32);
-                setBlockSize(8)
-                break;
         }
     };
 
@@ -121,13 +106,13 @@ const MainSymmetric = () => {
             "keySize": keySize,
             "algorithm": algorithm
         }
-        console.log("get Key request: ", body);
         axios({
             method: 'post',
-            url: `${SITE_URL}/symmetric/generateKey`,
+            url: `${SITE_URL}/asymmetric/generateKey`,
             data: body
         }).then((res) => {
-            setKeyValue(res.data.content);
+            setPublicKeyValue(res.data.publicKey);
+            setPrivateKeyValue(res.data.privateKey);
         }).catch(err => {
             enqueueSnackbar("Lỗi tạo key, vui lòng chọn đúng");
         });
@@ -151,7 +136,7 @@ const MainSymmetric = () => {
         console.log("encrypt data request", body);
         axios({
             method: 'post',
-            url: `${SITE_URL}/symmetric/${fileName ? "crypto-file" : "crypto-text"}`,
+            url: `${SITE_URL}/asymmetric/${fileName ? "crypto-file-AES" : "crypto-text"}`,
             data: body
         }).then((res) => {
             if (fileName) {
@@ -202,6 +187,9 @@ const MainSymmetric = () => {
         setDataInput("");
         setDataOutput("");
         setFile(null);
+        if (newValue == 2) {
+            setKeyValue("");
+        }
     }
 
     useEffect(() => {
@@ -306,7 +294,7 @@ const MainSymmetric = () => {
             </Grid>
 
             <Grid item xs={12}>
-                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Chọn thuật toán mã hóa, mode & padding:</div></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Chọn thuật toán mã hóa, padding:</div></Divider>
             </Grid>
             <Grid item lg={4} xs={12}>
                 <div>Thuật toán</div>
@@ -315,35 +303,18 @@ const MainSymmetric = () => {
                         value={algorithm}
                         onChange={handleAlgorithmChange}
                     >
-                        <MenuItem value={"AES"}>
-                            <span style={{ fontWeight: "bolder" }}>AES-</span> Advanced Encryption Standard
+                        <MenuItem value={"RSA"}>
+                            <span style={{ fontWeight: "bolder" }}>RSA-</span> Rivest Shamir Adleman
                         </MenuItem>
-                        <MenuItem value={"DES"}>
-                            <span style={{ fontWeight: "bolder" }}>DES-</span> Data Encryption Standard
+                        <MenuItem disabled value={null}>
+                            Đang cập nhật .....
                         </MenuItem>
-                        <MenuItem value={"Blowfish"}>
-                            <span style={{ fontWeight: "bolder" }}>Blowfish</span>
-                        </MenuItem>
-                        <MenuItem value={"Twofish"}>
-                            <span style={{ fontWeight: "bolder" }}>Twofish</span>
-                        </MenuItem>
-                        <MenuItem value={"Serpent"}>
-                            <span style={{ fontWeight: "bolder" }}>Serpent</span>
-                        </MenuItem>
+
                     </Select>
                     {showVerified ?
                         <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
                             <VerifiedUserIcon style={{ color: "green", verticalAlign: 'middle' }} />
-                            <span style={{ color: "#575859" }}>Thuật toán này thuộc JDK (SUN)</span>
-                        </div> : null
-                    }
-                    {show3rd ?
-                        <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
-                            <InfoOutlinedIcon style={{ color: "blue", verticalAlign: 'middle' }} />
-                            <span style={{ color: "#575859" }}> Sử dụng thư viện <a
-                                target='_blank' rel="noreferrer"
-                                style={{ color: "blue", textDecoration: "underline", fontWeight: "900" }}
-                                href="https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on/1.69">Bouncy Castle 1.69</a> </span>
+                            <span style={{ color: "#575859" }}>Được cung cấp bởi JDK (SUN)</span>
                         </div> : null
                     }
                 </FormControl>
@@ -351,31 +322,8 @@ const MainSymmetric = () => {
 
             <Grid item lg={3} md={5} xs={12}>
                 <div>Mode Operation</div>
-                <FormControl >
-                    <Select
-                        value={modeOperation}
-                        onChange={event => setModeOperation(event.target.value)}
-                    >
-                        <MenuItem value={"ECB"}>
-                            <span style={{ fontWeight: "bolder" }}>ECB</span> - Electronic Codebook
-                        </MenuItem>
-                        <MenuItem value={"CBC"}>
-                            <span style={{ fontWeight: "bolder" }}>CBC</span> - Cipher-Block Chaining
-                        </MenuItem>
-                        <MenuItem value={"PCBC"}>
-                            <span style={{ fontWeight: "bolder" }}>PCBC</span> - Propagating cipher-block chaining
-                        </MenuItem>
-                        <MenuItem value={"CFB"}>
-                            <span style={{ fontWeight: "bolder" }}>CFB</span> - Cipher Feedback
-                        </MenuItem>
-                        <MenuItem value={"OFB"}>
-                            <span style={{ fontWeight: "bolder" }}>OFB</span> - Output Feedback
-                        </MenuItem>
-                        <MenuItem value={"CTR"}>
-                            <span style={{ fontWeight: "bolder" }}>CTR</span> - Counter
-                        </MenuItem>
-                    </Select>
-                </FormControl>
+                <br/>
+                <span style={{ fontWeight: "bolder" }}>ECB</span> - Electronic Codebook
             </Grid>
 
             <Grid item lg={3} md={5} xs={12}>
@@ -385,14 +333,11 @@ const MainSymmetric = () => {
                         value={padding}
                         onChange={event => setPadding(event.target.value)}
                     >
-                        <MenuItem value={"PKCS5Padding"}>
-                            <span style={{ fontWeight: "bolder" }}>PKCS5Padding</span>
+                        <MenuItem value={"PKCS1Padding"}>
+                            <span style={{ fontWeight: "bolder" }}>PKCS1Padding</span>
                         </MenuItem>
-                        <MenuItem value={"ISO10126Padding"}>
-                            <span style={{ fontWeight: "bolder" }}>ISO10126Padding</span>
-                        </MenuItem>
-                        <MenuItem value={"NoPadding"}>
-                            <span style={{ fontWeight: "bolder" }}>NoPadding</span>
+                        <MenuItem value={"OAEPWithSHA-1AndMGF1Padding"}>
+                            <span style={{ fontWeight: "bolder" }}>OAEPWithSHA-1AndMGF1Padding</span>
                         </MenuItem>
                     </Select>
                 </FormControl>
@@ -432,37 +377,70 @@ const MainSymmetric = () => {
                 </>
             }
 
+            {cipherMode == 1 ?
+                <Grid item xs={11}>
+                    <Accordion>
+                        <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                        >
+                            <Grid item xs={12}>
+                                <span style={{ fontSize: "1.5em", color: "blue", fontWeight: "bolder" }} > Bạn chưa có key? Click để tạo key </span>
+                            </Grid>
+                        </AccordionSummary>
+                        <AccordionDetails >
+                            <Stack alignItems="center"
+                                justifyContent="center" direction="row" spacing={10}>
+                                <Box>
+                                    <div>Nhập kích thước key</div>
+                                    <ChooseKeySize algorithm={algorithm} listItems={listItems} keySize={keySize} parentCallback={handleCallBack} />
+                                    <div>
+                                        <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
+                                            <Button disabled={disabledGenKey}
+                                                onClick={getKeyAPI}
+                                                variant="contained">Tạo key ngẫu nhiên</Button>
+                                        </Tooltip>
+                                    </div>
+                                </Box>
+                                <div style={{ width: "60%" }}>
+                                    <span>Public key (base64)</span>
+                                    <Form.Control as="textarea"
+                                        value={publicKeyValue}
+                                        onChange={e => { setPublicKeyValue(e.target.value); if (publicKeyValue == "") { setShowCopyKey(false) } }}
+                                        rows={3} style={{ width: "100%", height: "100%", fontSize: "15px" }} />
+                                    <br />
+                                    <br />
+                                    <br />
+                                    <span>Private key (base64)</span>
+                                    <Form.Control as="textarea"
+                                        value={privateKeyValue}
+                                        onChange={e => { setPrivateKeyValue(e.target.value); if (privateKeyValue == "") { setShowCopyKey(false) } }}
+                                        rows={9} style={{ width: "100%", height: "100%", fontSize: "15px" }} />
+                                </div>
+                            </Stack>
+                        </AccordionDetails>
+                    </Accordion>
+                </Grid>
+                : null}
+
             <Grid item xs={12}>
-                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập key (base64):</div></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập {cipherMode == 1 ?
+                    <span><b>public key</b> (hoặc private key)</span> : <span><b>private key</b> (hoặc public key)</span>
+                } để {cipherMode == 1 ? "mã hóa" : "giải mã"} (base64):</div></Divider>
             </Grid>
             <Grid item lg={3} xs={4}>
-                <div>Chọn kích thước key</div>
-                <ChooseKeySize algorithm={algorithm} listItems={listItems} keySize={keySize} parentCallback={handleCallBack} />
-                <div>
-                    <Stack direction="row"
-                        sx={{ mx: "auto", justifyContent: "center", textAlign: "center", marginTop: "10px", marginLeft: "49px" }}
-                        spacing={1}>
-                        <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
-                            <Button disabled={disabledGenKey}
-                                onClick={getKeyAPI}
-                                variant="contained">Tạo key ngẫu nhiên</Button>
-                        </Tooltip>
-                        <Tooltip style={{ visibility: showCopyKey ? "visible" : "hidden" }}
-                            title="Copy key">
-                            <IconButton onClick={() => { navigator.clipboard.writeText(keyValue) }} >
-                                <ContentCopyOutlinedIcon />
-                            </IconButton>
-                        </Tooltip>
-                    </Stack>
-                </div>
-
-
+                {publicKeyValue != "" && cipherMode == 1 ?
+                    <Button
+                        onClick={() => setKeyValue(publicKeyValue)}
+                        variant="contained">Sử dụng public key bên trên</Button> : null
+                }
             </Grid>
             <Grid item lg={9} xs={12}>
                 <Form.Control as="textarea"
                     value={keyValue}
                     onChange={e => { setKeyValue(e.target.value); if (keyValue == "") { setShowCopyKey(false) } }}
-                    rows={3} style={{ width: "80%", height: "70%", fontSize: "15px" }} />
+                    rows={5} style={{ width: "80%", height: "100%", fontSize: "15px" }} />
             </Grid>
 
 
@@ -515,11 +493,11 @@ const MainSymmetric = () => {
                     <ZoneDownload pathFileDownload={pathFileDownload} />
                 </Grid>
             }
-            {cipherMode == 1 && dataOutput != "" || pathFileDownload!=null ?
+            {cipherMode == 1 && dataOutput != "" || pathFileDownload != null ?
                 <h3 style={{ color: "green" }}>Vui lòng lưu lại {IVValue != "" ? "IV," : null} key, thuật toán, mode, padding để giải mã</h3> : null
             }
         </Grid >
     )
 }
 
-export default MainSymmetric
+export default MainAsymmetric

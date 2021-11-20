@@ -4,7 +4,10 @@ import CORE.Utility;
 
 import java.io.*;
 import java.security.Key;
+import java.security.SecureRandom;
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class Symmetric {
@@ -12,6 +15,9 @@ public class Symmetric {
     private int cipherMode;  // Cipher.DECRYPT_MODE=2   Cipher.ENCRYPT_MODE=1
     private Key key;
     private Cipher cipher;
+
+    public Symmetric(){
+    };
 
     public Symmetric(int cipherMode, String keyBase64, String modeOperation, String padding, String algorithm, String iv) throws Exception {
         this.cipherMode = cipherMode;
@@ -22,6 +28,14 @@ public class Symmetric {
         } else {
             cipher.init(cipherMode, key, new IvParameterSpec(iv.getBytes()));
         }
+    }
+
+    public  Key generateKey(int keySize, String algorithm) throws Exception {
+        KeyGenerator keyGen = KeyGenerator.getInstance(algorithm);
+        SecureRandom secureRandom = new SecureRandom();
+        keyGen.init(keySize,secureRandom);
+        SecretKey secretKey = keyGen.generateKey();
+        return  secretKey;
     }
 
     public String doCryptoText( String data) throws Exception {

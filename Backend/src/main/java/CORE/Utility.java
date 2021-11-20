@@ -41,12 +41,6 @@ public class Utility {
         return Base64.getDecoder().decode(text);
     }
 
-    public static Key generateKey(int keySize, String algorithm) throws Exception {
-        KeyGenerator keyGen = KeyGenerator.getInstance(algorithm);
-        keyGen.init(keySize);
-        SecretKey secretKey = keyGen.generateKey();
-        return  secretKey;
-    }
 
     public static String keyToBase64(Key key)  {
         String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());

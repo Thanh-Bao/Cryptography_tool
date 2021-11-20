@@ -49,6 +49,7 @@ const Hash = () => {
             "data": dataInput
         }
         if (dataInput.length > 0) {
+            setDataOuput("loading...");
             axios({
                 method: 'post',
                 url: `${SITE_URL}/hash-text`,
