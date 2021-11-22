@@ -27,7 +27,7 @@ import { useRouter } from 'next/router';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
-
+import HttpsIcon from '@mui/icons-material/Https';
 
 const ZoneDownload = (props) => {
     return (
@@ -75,6 +75,7 @@ const MainSymmetric = () => {
     const [disabledGenKey, setDisabledGenKey] = useState(false);
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
+
 
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
@@ -161,7 +162,12 @@ const MainSymmetric = () => {
             }
             router.push(`${window.location.pathname}#result-output`)
         }).catch(err => {
-            enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn các options");
+            if (padding == "NoPadding") {
+                enqueueSnackbar("Lỗi mã hóa, NoPadding input lenght phải là bội của 16 bytes");
+            } else {
+                enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn các options");
+            }
+            setDataOutput("");
         });
     }
 
@@ -264,6 +270,10 @@ const MainSymmetric = () => {
             </div>
             <Grid item xs={12}>
                 <div style={{ fontSize: '20px' }}>Nhập {showInputText ? "text" : "file"} cần {cipherMode == 1 ? "mã hóa" : "giải mã"} :</div>
+                <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
+                    <HttpsIcon style={{ color: "#575859", verticalAlign: 'middle', fontSize: '15px' }} />
+                    <span style={{ color: "#575859" }}> {showInputText ? "Plaintext" : "File"} được gửi tới server thông qua HTTPS (SSL) </span>
+                </div>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <FormControl >
@@ -282,7 +292,7 @@ const MainSymmetric = () => {
                     <>
                         <Form.Control as="textarea"
                             value={dataInput}
-                            onChange={event => { setDataInput(event.target.value), setInputSize(event.target.value.length) }}
+                            onChange={event => { setDataInput(event.target.value), setInputSize(event.target.value.length), setDataOutput("") }}
                             rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
                         {inputSize > 0 ? <div>{inputSize * 8} bit</div> : null}
                     </>
@@ -387,6 +397,9 @@ const MainSymmetric = () => {
                     >
                         <MenuItem value={"PKCS5Padding"}>
                             <span style={{ fontWeight: "bolder" }}>PKCS5Padding</span>
+                        </MenuItem>
+                        <MenuItem value={"PKCS7Padding"}>
+                            <span style={{ fontWeight: "bolder" }}>PKCS7Padding</span>
                         </MenuItem>
                         <MenuItem value={"ISO10126Padding"}>
                             <span style={{ fontWeight: "bolder" }}>ISO10126Padding</span>
@@ -515,7 +528,7 @@ const MainSymmetric = () => {
                     <ZoneDownload pathFileDownload={pathFileDownload} />
                 </Grid>
             }
-            {cipherMode == 1 && dataOutput != "" || pathFileDownload!=null ?
+            {cipherMode == 1 && dataOutput != "" || pathFileDownload != null ?
                 <h3 style={{ color: "green" }}>Vui lòng lưu lại {IVValue != "" ? "IV," : null} key, thuật toán, mode, padding để giải mã</h3> : null
             }
         </Grid >

@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.security.Key;
 
-
+@CrossOrigin(origins = "*")
 @RestController
 public class SymmetricController {
 
-    //@CrossOrigin(origins = "http://localhost:3000")
+
     @PostMapping(value = "/symmetric/generateKey")
     public Object generateKey(@RequestBody GetKeyDTO payload) throws Exception {
         int keySize = payload.getKeySize();
@@ -44,7 +44,7 @@ public class SymmetricController {
 
         String fileName = null;
         if (payload.getMode() == 1) {
-            fileName = "ENCRYPTED-" + payload.getData();
+            fileName =  payload.getData()+".ENCRYPTED";
         } else {
             fileName = "DECRYPTED-" + payload.getData();
         }

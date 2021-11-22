@@ -32,6 +32,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import HttpsIcon from '@mui/icons-material/Https';
 
 const ZoneDownload = (props) => {
     return (
@@ -123,32 +124,75 @@ const MainAsymmetric = () => {
     }
 
     const handleSubmit = () => {
-        const data = fileName ? fileName : dataInput;
-        const body = {
-            "key": keyValue,
-            "mode": cipherMode, // trong Cipher mode java 1 là mã hóa
-            "algorithm": algorithm,
-            "modeOperation": modeOperation,
-            "padding": padding,
-            "iv": IVValue,
-            "data": data,
-        }
-        console.log("encrypt data request", body);
-        axios({
-            method: 'post',
-            url: `${SITE_URL}/asymmetric/${fileName ? "crypto-file-AES" : "crypto-text"}`,
-            data: body
-        }).then((res) => {
-            if (fileName) {
-                setPathFileDownload(SITE_URL + res.data.content);
-            } else {
-                setDataOutput(res.data.content);
+        if (fileName == null) {
+            const data = dataInput;
+            const body = {
+                "key": keyValue,
+                "mode": cipherMode, // trong Cipher mode java 1 là mã hóa
+                "algorithm": algorithm,
+                "modeOperation": modeOperation,
+                "padding": padding,
+                "iv": IVValue,
+                "data": data,
             }
-            router.push(`${window.location.pathname}#result-output`)
-        }).catch(err => {
-            enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn các options");
-        });
+            console.log("encrypt data request", body);
+            axios({
+                method: 'post',
+                url: `${SITE_URL}/asymmetric/crypto-text`,
+                data: body
+            }).then((res) => {
+                successCrypto(res);
+            }).catch(err => {
+                errorCrypto();
+            });
+        } else if (cipherMode == 1) {
+            const body = {
+                "key": keyValue,
+                "data": fileName,
+            }
+            console.log("encrypt data request", body);
+            axios({
+                method: 'post',
+                url: `${SITE_URL}/asymmetric/encrypt-file`,
+                data: body
+            }).then((res) => {
+                successCrypto(res);
+            }).catch(err => {
+                errorCrypto();
+            });
+        } else {
+            const body = {
+                "key": keyValue,
+                "data": fileName,
+            }
+            console.log("encrypt data request", body);
+            axios({
+                method: 'post',
+                url: `${SITE_URL}/asymmetric/decrypt-file`,
+                data: body
+            }).then((res) => {
+                successCrypto(res);
+            }).catch(err => {
+                errorCrypto();
+            });
+        }
     }
+
+    const successCrypto = res => {
+        if (fileName) {
+            setPathFileDownload(SITE_URL + res.data.content);
+        } else {
+            setDataOutput(res.data.content);
+        }
+        router.push(`${window.location.pathname}#result-output`)
+    }
+
+    const errorCrypto = () => {
+        enqueueSnackbar("Lỗi mã hóa, vui lòng kiểm tra lại và chọn các options");
+        setDataOutput("");
+    }
+
+
 
     const onFormSubmitFile = (e) => {
         e.preventDefault() // Stop form submit
@@ -252,6 +296,10 @@ const MainAsymmetric = () => {
             </div>
             <Grid item xs={12}>
                 <div style={{ fontSize: '20px' }}>Nhập {showInputText ? "text" : "file"} cần {cipherMode == 1 ? "mã hóa" : "giải mã"} :</div>
+                <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
+                    <HttpsIcon style={{ color: "#575859", verticalAlign: 'middle', fontSize: '15px' }} />
+                    <span style={{ color: "#575859" }}> {showInputText ? "Plaintext" : "File"} được gửi tới server thông qua HTTPS (SSL) </span>
+                </div>
             </Grid>
             <Grid item lg={3} xs={12}>
                 <FormControl >
@@ -270,7 +318,7 @@ const MainAsymmetric = () => {
                     <>
                         <Form.Control as="textarea"
                             value={dataInput}
-                            onChange={event => { setDataInput(event.target.value), setInputSize(event.target.value.length) }}
+                            onChange={event => { setDataInput(event.target.value), setInputSize(event.target.value.length), setDataOutput("") }}
                             rows={3} style={{ width: "80%", height: "110%", fontSize: "15px" }} />
                         {inputSize > 0 ? <div>{inputSize * 8} bit</div> : null}
                     </>
@@ -311,18 +359,12 @@ const MainAsymmetric = () => {
                         </MenuItem>
 
                     </Select>
-                    {showVerified ?
-                        <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', justifyContent: "center" }}>
-                            <VerifiedUserIcon style={{ color: "green", verticalAlign: 'middle' }} />
-                            <span style={{ color: "#575859" }}>Được cung cấp bởi JDK (SUN)</span>
-                        </div> : null
-                    }
                 </FormControl>
             </Grid>
 
             <Grid item lg={3} md={5} xs={12}>
                 <div>Mode Operation</div>
-                <br/>
+                <br />
                 <span style={{ fontWeight: "bolder" }}>ECB</span> - Electronic Codebook
             </Grid>
 
@@ -336,7 +378,7 @@ const MainAsymmetric = () => {
                         <MenuItem value={"PKCS1Padding"}>
                             <span style={{ fontWeight: "bolder" }}>PKCS1Padding</span>
                         </MenuItem>
-                        <MenuItem value={"OAEPWithSHA-1AndMGF1Padding"}>
+                        <MenuItem disabled={showInputText ? false : true} value={"OAEPWithSHA-1AndMGF1Padding"}>
                             <span style={{ fontWeight: "bolder" }}>OAEPWithSHA-1AndMGF1Padding</span>
                         </MenuItem>
                     </Select>
@@ -393,8 +435,8 @@ const MainAsymmetric = () => {
                             <Stack alignItems="center"
                                 justifyContent="center" direction="row" spacing={10}>
                                 <Box>
-                                    <div>Nhập kích thước key</div>
-                                    <ChooseKeySize algorithm={algorithm} listItems={listItems} keySize={keySize} parentCallback={handleCallBack} />
+                                    <div>Nhập kích thước key (bit)</div>
+                                    <ChooseKeySize disabled={showInputText ? false : true} algorithm={algorithm} listItems={listItems} keySize={keySize} parentCallback={handleCallBack} />
                                     <div>
                                         <Tooltip title="Key được hệ thống tạo ngẫu nhiên từng bit">
                                             <Button disabled={disabledGenKey}
@@ -425,9 +467,16 @@ const MainAsymmetric = () => {
                 : null}
 
             <Grid item xs={12}>
-                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập {cipherMode == 1 ?
-                    <span><b>public key</b> (hoặc private key)</span> : <span><b>private key</b> (hoặc public key)</span>
-                } để {cipherMode == 1 ? "mã hóa" : "giải mã"} (base64):</div></Divider>
+                <Divider style={{ marginTop: "30px" }}> <div style={{ fontSize: '20px' }}>Nhập
+
+                    {showInputText ? <>
+                        {cipherMode == 1 ?
+                            <span><b> public key</b> (hoặc private key)</span> : <span><b> private key</b> (hoặc public key)</span>
+                        }</>
+                        : " private key "
+                    }
+
+                    (base64):</div></Divider>
             </Grid>
             <Grid item lg={3} xs={4}>
                 {publicKeyValue != "" && cipherMode == 1 ?

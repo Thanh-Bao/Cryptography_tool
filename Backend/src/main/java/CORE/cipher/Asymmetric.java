@@ -7,6 +7,10 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -21,7 +25,7 @@ public class Asymmetric {
 
     public Asymmetric(){};
 
-    public Asymmetric(int cipherMode, String publicOrPrivateKeyBase64, String modeOperation, String padding, String algorithm, String iv) throws Exception {
+    public Asymmetric(int cipherMode, String publicOrPrivateKeyBase64, String modeOperation, String padding, String algorithm) throws Exception {
         this.cipherMode = cipherMode;
         cipher = Cipher.getInstance(algorithm+"/"+modeOperation+"/"+padding);
          try {
@@ -67,5 +71,79 @@ public class Asymmetric {
             result = new String(encVal);
         }
         return result;
+    }
+
+    static private Base64.Encoder encoder = Base64.getEncoder();
+    static SecureRandom srandom = new SecureRandom();
+
+    static private void processFile(Cipher ci, InputStream in, OutputStream out)
+            throws javax.crypto.IllegalBlockSizeException,
+            javax.crypto.BadPaddingException,
+            IOException
+    {
+        byte[] ibuf = new byte[1024];
+        int len;
+        while ((len = in.read(ibuf)) != -1) {
+            byte[] obuf = ci.update(ibuf, 0, len);
+            if ( obuf != null ) out.write(obuf);
+        }
+        byte[] obuf = ci.doFinal();
+        if ( obuf != null ) out.write(obuf);
+    }
+
+    static public void doEncryptRSAWithAES(String publicKeyBase64, File inputFile, File outputFile) throws Exception
+    {
+        PublicKey publicKey = base64ToPublicKey(publicKeyBase64);
+
+        KeyGenerator kgen = KeyGenerator.getInstance("AES");
+        kgen.init(128);
+        SecretKey skey = kgen.generateKey();
+
+        byte[] iv = new byte[128/8];
+        srandom.nextBytes(iv);
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+
+        try (FileOutputStream out = new FileOutputStream(outputFile)) {
+            {
+                Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                cipher.init(Cipher.ENCRYPT_MODE, publicKey );
+                byte[] b = cipher.doFinal(skey.getEncoded());
+                out.write(b);
+            }
+            out.write(iv);
+            Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            ci.init(Cipher.ENCRYPT_MODE, skey, ivspec);
+            try (FileInputStream in = new FileInputStream(inputFile)) {
+                processFile(ci, in, out);
+            }
+        }
+    }
+
+    static public void doDecryptRSAWithAES(String privateKeyBase64, File inputFile, File outputFile) throws Exception
+    {
+        PrivateKey privateKey = base64ToPrivateKey(privateKeyBase64);
+
+        try (FileInputStream in = new FileInputStream(inputFile)) {
+            SecretKeySpec skey = null;
+            {
+                Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                cipher.init(Cipher.DECRYPT_MODE, privateKey);
+                byte[] b = new byte[128];
+                in.read(b);
+                byte[] keyb = cipher.doFinal(b);
+                skey = new SecretKeySpec(keyb, "AES");
+            }
+
+            byte[] iv = new byte[128/8];
+            in.read(iv);
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+
+            Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            ci.init(Cipher.DECRYPT_MODE, skey, ivspec);
+
+            try (FileOutputStream out = new FileOutputStream(outputFile)){
+                processFile(ci, in, out);
+            }
+        }
     }
 }

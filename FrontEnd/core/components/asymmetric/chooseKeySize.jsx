@@ -45,6 +45,7 @@ const ChooseKeySize = props => {
                     <Stack style={{ marginTop: "10px" }} spacing={2}>
                         <div>
                             <NumericInput
+                                disabled={props.disabled}
                                 precision={0}
                                 decimalChar=','
                                 thousandChar=' '

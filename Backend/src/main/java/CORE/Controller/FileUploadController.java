@@ -19,6 +19,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+@CrossOrigin(origins = "*")
 @RestController
 public class FileUploadController {
 
@@ -38,8 +39,8 @@ public class FileUploadController {
     public String test() throws Exception {
         Symmetric s1 = new Symmetric(1, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "AES", "Ap35CeaK&=301^wa");
         Symmetric s2 = new Symmetric(2, "bjJyNXU4eC9BJUQqRy1LYVBkU2dWa1lwM3M2djl5JEI=", "CBC", "PKCS5Padding", "AES", "Ap35CeaK&=301^wa");
-        s1.doCryptoFile(new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
-        s2.doCryptoFile(new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
+        //s1.doCryptoFile(new File("C:\\GGG.PNG"), new File("C:\\HHH.PNG"));
+        //s2.doCryptoFile(new File("C:\\HHH.PNG"), new File("C:\\YYY.PNG"));
         return "TESTING";
     }
 }
