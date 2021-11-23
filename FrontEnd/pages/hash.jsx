@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useRef, useEffect } from 'react'
 import Layout from '@/layout/layout'
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -25,6 +25,8 @@ import TextField from '@mui/material/TextField';
 const Hash = () => {
     const { enqueueSnackbar } = useSnackbar();
 
+    const effect = useRef(false);
+
     const [showInputText, setShowInputText] = React.useState(true);
     const [dataInput, setDataInput] = useState("");
     const [file, setFile] = useState(null);
@@ -39,6 +41,10 @@ const Hash = () => {
         setDataInput("");
         setDataOuput("");
     };
+
+    useEffect(() => {
+        effect.current = true;
+    }, []);
 
     const onFormSubmitFile = (e) => {
         e.preventDefault() // Stop form submit
@@ -59,21 +65,24 @@ const Hash = () => {
             });
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         const body = {
             "algorithm": algorithm,
             "data": fileName
         }
-        axios({
-            method: 'post',
-            url: `${SITE_URL}/hash-file`,
-            data: body
-        }).then((res) => {
-            setDataOuput(res.data);
-        }).catch(err => {
-            enqueueSnackbar("Lỗi hash file");
-        });
-    },[fileName]);
+
+        if (effect.current) {
+            axios({
+                method: 'post',
+                url: `${SITE_URL}/hash-file`,
+                data: body
+            }).then((res) => {
+                setDataOuput(res.data);
+            }).catch(err => {
+                enqueueSnackbar("Lỗi hash file");
+            });
+        }
+    }, [fileName]);
 
     // send data to backend
     useEffect(() => {
