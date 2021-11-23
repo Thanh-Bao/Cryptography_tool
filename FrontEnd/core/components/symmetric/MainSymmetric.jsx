@@ -76,6 +76,7 @@ const MainSymmetric = () => {
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
 
+    const LOADING = "Đang lấy dữ liệu, vui lòng chờ hoặc kiểm tra lại internet!....";
 
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
@@ -118,11 +119,11 @@ const MainSymmetric = () => {
 
     const getKeyAPI = () => {
         setShowCopyKey(true);
+        setKeyValue(LOADING);
         const body = {
             "keySize": keySize,
             "algorithm": algorithm
         }
-        console.log("get Key request: ", body);
         axios({
             method: 'post',
             url: `${SITE_URL}/symmetric/generateKey`,
@@ -140,6 +141,7 @@ const MainSymmetric = () => {
 
     const handleSubmit = () => {
         const data = fileName ? fileName : dataInput;
+        setDataOutput(LOADING);
         const body = {
             "key": keyValue,
             "mode": cipherMode, // trong Cipher mode java 1 là mã hóa

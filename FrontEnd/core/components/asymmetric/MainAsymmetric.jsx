@@ -82,6 +82,8 @@ const MainAsymmetric = () => {
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
 
+    const LOADING = "Đang lấy dữ liệu, vui lòng chờ hoặc kiểm tra lại internet!....";
+
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
         setAlgorithm(value);
@@ -103,6 +105,8 @@ const MainAsymmetric = () => {
 
     const getKeyAPI = () => {
         setShowCopyKey(true);
+        setPublicKeyValue(LOADING);
+        setPrivateKeyValue(LOADING);
         const body = {
             "keySize": keySize,
             "algorithm": algorithm
@@ -124,6 +128,7 @@ const MainAsymmetric = () => {
     }
 
     const handleSubmit = () => {
+        setDataOutput(LOADING)
         if (fileName == null) {
             const data = dataInput;
             const body = {
@@ -150,7 +155,6 @@ const MainAsymmetric = () => {
                 "key": keyValue,
                 "data": fileName,
             }
-            console.log("encrypt data request", body);
             axios({
                 method: 'post',
                 url: `${SITE_URL}/asymmetric/encrypt-file`,
@@ -165,7 +169,6 @@ const MainAsymmetric = () => {
                 "key": keyValue,
                 "data": fileName,
             }
-            console.log("encrypt data request", body);
             axios({
                 method: 'post',
                 url: `${SITE_URL}/asymmetric/decrypt-file`,
