@@ -33,6 +33,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import HttpsIcon from '@mui/icons-material/Https';
+import ReactLoading from "react-loading";
 
 const ZoneDownload = (props) => {
     return (
@@ -81,6 +82,7 @@ const MainAsymmetric = () => {
     const [disabledGenKey, setDisabledGenKey] = useState(false);
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
+    const [showUploadLoading, setShowUploadLoading] = useState(false);
 
     const LOADING = "Đang lấy dữ liệu, vui lòng chờ hoặc kiểm tra lại internet!....";
 
@@ -200,6 +202,7 @@ const MainAsymmetric = () => {
     const onFormSubmitFile = (e) => {
         e.preventDefault() // Stop form submit
 
+        setShowUploadLoading(true);
         let formData = new FormData();
         formData.append("file", file)
 
@@ -207,10 +210,12 @@ const MainAsymmetric = () => {
 
         axios.post(`${SITE_URL}/uploadFile`, formData, config)
             .then((res) => {
+                setShowUploadLoading(false);
                 enqueueSnackbar("Tải file thành công");
                 setFileName(res.data.content);
             })
             .catch((err) => {
+                setShowUploadLoading(false);
                 enqueueSnackbar("Lỗi tải file, vui lòng kiểm tra lại");
                 console.log(err)
             });
@@ -337,6 +342,12 @@ const MainAsymmetric = () => {
                                             <Button type="submit" variant="contained" >  Tải file lên</Button>
                                         </form>
                                     </div>
+                                    {showUploadLoading ?
+                                        <div>
+                                            <div style={{ marginLeft: "250px" }}><ReactLoading type="spokes" color="#001aff" /></div>
+                                            <h1>Đang upload!</h1>
+                                        </div> : null
+                                    }
                                 </Stack>
                             </label>
                         </div>

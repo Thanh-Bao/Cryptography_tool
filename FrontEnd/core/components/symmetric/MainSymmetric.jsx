@@ -28,6 +28,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
 import HttpsIcon from '@mui/icons-material/Https';
+import ReactLoading from "react-loading";
 
 const ZoneDownload = (props) => {
     return (
@@ -75,6 +76,7 @@ const MainSymmetric = () => {
     const [disabledGenKey, setDisabledGenKey] = useState(false);
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
+    const [showUploadLoading, setShowUploadLoading] = useState(false);
 
     const LOADING = "Đang lấy dữ liệu, vui lòng chờ hoặc kiểm tra lại internet!....";
 
@@ -177,6 +179,7 @@ const MainSymmetric = () => {
     const onFormSubmitFile = (e) => {
         e.preventDefault() // Stop form submit
 
+        setShowUploadLoading(true);
         let formData = new FormData();
         formData.append("file", file)
 
@@ -184,10 +187,12 @@ const MainSymmetric = () => {
 
         axios.post(`${SITE_URL}/uploadFile`, formData, config)
             .then((res) => {
+                setShowUploadLoading(false);
                 enqueueSnackbar("Tải file thành công");
                 setFileName(res.data.content);
             })
             .catch((err) => {
+                setShowUploadLoading(false);
                 enqueueSnackbar("Lỗi tải file, vui lòng kiểm tra lại");
                 console.log(err)
             });
@@ -311,6 +316,12 @@ const MainSymmetric = () => {
                                             <Button type="submit" variant="contained" >  Tải file lên</Button>
                                         </form>
                                     </div>
+                                    {showUploadLoading ?
+                                        <div>
+                                            <div style={{ marginLeft: "250px" }}><ReactLoading type="spokes" color="#001aff" /></div>
+                                            <h1>Đang upload!</h1>
+                                        </div> : null
+                                    }
                                 </Stack>
                             </label>
                         </div>

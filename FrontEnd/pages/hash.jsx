@@ -21,6 +21,7 @@ import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import { SITE_URL } from '../core/config';
 import TextField from '@mui/material/TextField';
+import ReactLoading from "react-loading";
 
 const Hash = () => {
     const { enqueueSnackbar } = useSnackbar();
@@ -34,6 +35,10 @@ const Hash = () => {
     const [hashMatch, setHashMatch] = useState("");
     const [INHOA, setINHOA] = useState(false);
 
+    //UI
+    const [showUpload, setShowUpload] = useState(false);
+
+
     const handleSwitch = () => {
         setShowInputText(!showInputText);
         setDataInput("");
@@ -41,6 +46,8 @@ const Hash = () => {
     };
 
     const onFormSubmitFile = (e) => {
+        setShowUpload(true);
+        setDataOuput("null");
         e.preventDefault() // Stop form submit
 
         let formData = new FormData();
@@ -64,14 +71,16 @@ const Hash = () => {
             "algorithm": algorithm,
             "data": fileName
         }
-        if (fileName!=null) {
+        if (fileName != null) {
             axios({
                 method: 'post',
                 url: `${SITE_URL}/hash-file`,
                 data: body
             }).then((res) => {
+                setShowUpload(false);
                 setDataOuput(res.data);
             }).catch(err => {
+                setShowUpload(false);
                 enqueueSnackbar("Lỗi hash file");
             });
         }
@@ -120,6 +129,7 @@ const Hash = () => {
                             <FormControlLabel value={false} control={<Radio />} label="File" />
                         </RadioGroup>
                     </FormControl>
+
                 </Grid>
                 <Grid item lg={9} xs={12}>
                     {showInputText ?
@@ -142,6 +152,12 @@ const Hash = () => {
                                                 <Button type="submit" variant="contained" >  Tải file lên</Button>
                                             </form>
                                         </div>
+                                        {showUpload ?
+                                            <div>
+                                                <div style={{ marginLeft: "250px" }}><ReactLoading type="spokes" color="#001aff" /></div>
+                                                <h1>Đang upload!</h1>
+                                            </div> : null
+                                        }
                                     </Stack>
                                 </label>
                             </div>
