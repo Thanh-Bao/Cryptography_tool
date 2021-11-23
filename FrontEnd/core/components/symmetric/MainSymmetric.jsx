@@ -81,6 +81,7 @@ const MainSymmetric = () => {
     const handleAlgorithmChange = (event) => {
         const value = event.target.value;
         setAlgorithm(value);
+        setKeyValue("");
         if (value == "AES" || value == "DES" || value == "Blowfish") {
             setShowVerified(true);
             setShow3rd(false);
