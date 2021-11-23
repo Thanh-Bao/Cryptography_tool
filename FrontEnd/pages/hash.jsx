@@ -27,6 +27,8 @@ const Hash = () => {
 
     const [showInputText, setShowInputText] = React.useState(true);
     const [dataInput, setDataInput] = useState("");
+    const [file, setFile] = useState(null);
+    const [fileName, setFileName] = useState(null);
     const [dataOutput, setDataOuput] = useState("null");
     const [algorithm, setAlgorithm] = useState("MD5");
     const [hashMatch, setHashMatch] = useState("");
@@ -39,8 +41,39 @@ const Hash = () => {
     };
 
     const onFormSubmitFile = (e) => {
+        e.preventDefault() // Stop form submit
 
+        let formData = new FormData();
+        formData.append("file", file)
+
+        var config = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+        axios.post(`${SITE_URL}/uploadFile`, formData, config)
+            .then((res) => {
+                enqueueSnackbar("Tải file thành công");
+                setFileName(res.data.content);
+            })
+            .catch((err) => {
+                enqueueSnackbar("Lỗi tải file, vui lòng kiểm tra lại");
+                console.log(err)
+            });
     }
+
+    useEffect(()=>{
+        const body = {
+            "algorithm": algorithm,
+            "data": fileName
+        }
+        axios({
+            method: 'post',
+            url: `${SITE_URL}/hash-file`,
+            data: body
+        }).then((res) => {
+            setDataOuput(res.data);
+        }).catch(err => {
+            enqueueSnackbar("Lỗi hash file");
+        });
+    },[fileName]);
 
     // send data to backend
     useEffect(() => {

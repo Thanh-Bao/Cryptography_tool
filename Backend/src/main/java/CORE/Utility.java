@@ -22,9 +22,13 @@ public class Utility {
         if (file.getSize() == 0 || file == null) {
             throw new Exception("Bạn chưa chọn file") ;
         }
+        String originFileName = file.getOriginalFilename();
+        if(originFileName.contains("._ENCRYPTED_")){
+            originFileName = originFileName.replace("._ENCRYPTED_","");
+        }
         UUID uuid = UUID.randomUUID();
         String uuidAsString = uuid.toString();
-        String fileName =  uuidAsString+"."+FilenameUtils.getExtension(file.getOriginalFilename());
+        String fileName =  uuidAsString+"."+FilenameUtils.getExtension(originFileName);
         File newFile = new File(ENV.pathMedia +fileName);
         newFile.createNewFile();
         FileOutputStream fos = new FileOutputStream(newFile);

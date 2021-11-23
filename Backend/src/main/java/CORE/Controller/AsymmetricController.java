@@ -41,7 +41,7 @@ public class AsymmetricController {
 
     @PostMapping(value = "/asymmetric/encrypt-file")
     public Object encryptFile(@RequestBody CryptoDTO payload) throws Exception {
-        String fileName = "ENCRYPTED-"+payload.getData();
+        String fileName =  payload.getData()+"._ENCRYPTED_";
         Asymmetric.doEncryptRSAWithAES(payload.getKey(),new File(ENV.pathMedia + payload.getData()), new File(ENV.pathMedia + fileName));
         ResponseDTO res = new ResponseDTO("link", "/files/" + fileName);
         return new ResponseEntity(res, HttpStatus.OK);

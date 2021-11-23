@@ -44,7 +44,7 @@ public class SymmetricController {
 
         String fileName = null;
         if (payload.getMode() == 1) {
-            fileName =  payload.getData()+".ENCRYPTED";
+            fileName =  payload.getData()+"._ENCRYPTED_";
         } else {
             fileName = "DECRYPTED-" + payload.getData();
         }
