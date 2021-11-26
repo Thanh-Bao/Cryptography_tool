@@ -47,6 +47,13 @@ const ZoneDownload = (props) => {
                         <Button disabled={props.pathFileDownload ? false : true}
                             variant="contained">Tải file về máy</Button></a>
                 </div>
+                {props.showDownloadLoading ?
+                    <Box sx={{ justifyContent: "center", textAlign: "center", flex: "center" }}>
+                        <div style={{ marginLeft: "48%" }} >
+                            <ReactLoading type="spokes" color="#001aff" />
+                        </div>
+                    </Box> : null
+                }
             </Stack>
         </>
     )
@@ -83,6 +90,7 @@ const MainAsymmetric = () => {
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
     const [showUploadLoading, setShowUploadLoading] = useState(false);
+    const [showDownloadLoading, setShowDownloadLoading] = useState(false);
 
     const LOADING = "Đang lấy dữ liệu, vui lòng chờ hoặc kiểm tra lại internet!....";
 
@@ -98,6 +106,7 @@ const MainAsymmetric = () => {
 
     const handleSwitch = () => {
         setShowInputText(!showInputText);
+        setShowDownloadLoading(false);
     };
 
     const handleCallBack = (data) => {
@@ -131,6 +140,7 @@ const MainAsymmetric = () => {
 
     const handleSubmit = () => {
         setDataOutput(LOADING)
+        setShowDownloadLoading(true);
         if (fileName == null) {
             const data = dataInput;
             const body = {
@@ -186,6 +196,7 @@ const MainAsymmetric = () => {
     const successCrypto = res => {
         if (fileName) {
             setPathFileDownload(SITE_URL + res.data.content);
+            setShowDownloadLoading(false);
         } else {
             setDataOutput(res.data.content);
         }
@@ -235,6 +246,7 @@ const MainAsymmetric = () => {
     const switchCryptMode = (e, newValue) => {
         setCipherMode(newValue);
         setPathFileDownload(null);
+        setShowDownloadLoading(false);
         setFileName(null);
         setDataInput("");
         setDataOutput("");
@@ -553,7 +565,9 @@ const MainAsymmetric = () => {
                 </Grid>
                 :
                 <Grid item xs={12}>
-                    <ZoneDownload pathFileDownload={pathFileDownload} />
+                    <ZoneDownload
+                    showDownloadLoading={showDownloadLoading}
+                    pathFileDownload={pathFileDownload} />
                 </Grid>
             }
             {cipherMode == 1 && dataOutput != "" || pathFileDownload != null ?

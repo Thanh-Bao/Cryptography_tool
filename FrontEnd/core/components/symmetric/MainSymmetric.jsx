@@ -121,6 +121,7 @@ const MainSymmetric = () => {
 
     const handleSwitch = () => {
         setShowInputText(!showInputText);
+        setShowDownloadLoading(false);
     };
 
     const handleCallBack = (data) => {
