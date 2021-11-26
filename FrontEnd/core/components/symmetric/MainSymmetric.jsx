@@ -42,6 +42,13 @@ const ZoneDownload = (props) => {
                         <Button disabled={props.pathFileDownload ? false : true}
                             variant="contained">Tải file về máy</Button></a>
                 </div>
+                {props.showDownloadLoading ?
+                    <Box sx={{ justifyContent: "center", textAlign: "center", flex: "center" }}>
+                        <div style={{ marginLeft: "48%" }} >
+                            <ReactLoading type="spokes" color="#001aff" />
+                        </div>
+                    </Box> : null
+                }
             </Stack>
         </>
     )
@@ -77,6 +84,7 @@ const MainSymmetric = () => {
     const [showSubmit, setShowSubmit] = useState(false);
     const [uploadFileWarning, setUploadFileWarning] = useState(false);
     const [showUploadLoading, setShowUploadLoading] = useState(false);
+    const [showDownloadLoading, setShowDownloadLoading] = useState(false);
 
     const LOADING = "Đang lấy dữ liệu, vui lòng chờ hoặc kiểm tra lại internet!....";
 
@@ -145,6 +153,7 @@ const MainSymmetric = () => {
     const handleSubmit = () => {
         const data = fileName ? fileName : dataInput;
         setDataOutput(LOADING);
+        setShowDownloadLoading(true);
         const body = {
             "key": keyValue,
             "mode": cipherMode, // trong Cipher mode java 1 là mã hóa
@@ -162,6 +171,7 @@ const MainSymmetric = () => {
         }).then((res) => {
             if (fileName) {
                 setPathFileDownload(SITE_URL + res.data.content);
+                setShowDownloadLoading(false);
             } else {
                 setDataOutput(res.data.content);
             }
@@ -211,6 +221,7 @@ const MainSymmetric = () => {
 
     const switchCryptMode = (e, newValue) => {
         setCipherMode(newValue);
+        setShowDownloadLoading(false);
         setPathFileDownload(null);
         setFileName(null);
         setDataInput("");
@@ -539,7 +550,9 @@ const MainSymmetric = () => {
                 </Grid>
                 :
                 <Grid item xs={12}>
-                    <ZoneDownload pathFileDownload={pathFileDownload} />
+                    <ZoneDownload
+                        showDownloadLoading={showDownloadLoading}
+                        pathFileDownload={pathFileDownload} />
                 </Grid>
             }
             {cipherMode == 1 && dataOutput != "" || pathFileDownload != null ?
